@@ -52,7 +52,7 @@ void blinky_send_layer(uint8_t layer) {
   uint8_t buffer[RAW_EPSIZE];
   memset(buffer, 0, RAW_EPSIZE);
   buffer[0] = BLINKY_EVT_LAYER;
-  buffer[1] = get_highest_layer(layer_state);
+  buffer[1] = layer;
   raw_hid_send(buffer, RAW_EPSIZE);
 }
 
