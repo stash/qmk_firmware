@@ -373,6 +373,13 @@ ifeq ($(strip $(VIA_ENABLE)), yes)
     OPT_DEFS += -DVIA_ENABLE
 endif
 
+ifeq ($(strip $(BLINKY_ENABLE)), yes)
+    DYNAMIC_KEYMAP_ENABLE := no
+    RAW_ENABLE := yes
+    SRC += $(QUANTUM_DIR)/blinky.c
+    OPT_DEFS += -DBLINKY_ENABLE
+endif
+
 ifeq ($(strip $(DYNAMIC_KEYMAP_ENABLE)), yes)
     OPT_DEFS += -DDYNAMIC_KEYMAP_ENABLE
     SRC += $(QUANTUM_DIR)/dynamic_keymap.c
