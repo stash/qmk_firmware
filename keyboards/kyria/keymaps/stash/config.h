@@ -1,4 +1,4 @@
-/* Copyright 2019 Thomas Baart <thomas@splitkb.com>
+/* Copyright 2020 Jeremy Stashewsky <jstash@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,15 +19,20 @@
 #undef PRODUCT_ID
 #define PRODUCT_ID 0x4B79 /* "Ky" for Kyria */
 #undef DEVICE_VER
-#define DEVICE_VER 0x0104
+#define DEVICE_VER 0x0103
 
 #ifdef OLED_DRIVER_ENABLE
   #define OLED_DISPLAY_128X64
+  #define OLED_UPDATE_INTERVAL 250
 #endif
 
-// If you are using an Elite C rev3 on the slave side, uncomment the lines below:
-// #define SPLIT_USB_DETECT
-// #define NO_USB_STARTUP_CHECK
+// EC11K encoders:
+#define ENCODER_RESOLUTION 2
+
+// Make TT work like ergodox
+#undef TAPPING_TOGGLE
+#define TAPPING_TOGGLE 1
+#define TAPPING_TERM 200
 
 #undef MOUSEKEY_INTERVAL
 #define MOUSEKEY_INTERVAL 5
@@ -49,7 +54,6 @@
 
 #define AUTO_SHIFT_TIMEOUT 135
 #define NO_AUTO_SHIFT_ALPHA
-#define RGB_MATRIX_STARTUP_SPD 60
 
 #define LEADER_PER_KEY_TIMING
 #define LEADER_TIMEOUT 500

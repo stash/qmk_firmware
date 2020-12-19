@@ -1,4 +1,5 @@
 /* Copyright 2019 Thomas Baart <thomas@splitkb.com>
+ * Copyright 2020 Jeremy Stashewsky <jstash@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,6 +16,13 @@
  */
 #include QMK_KEYBOARD_H
 
+enum custom_keycodes {
+  ST_MACRO_Sleep = SAFE_RANGE,
+  KC_CVVV,
+  KC_OBRT,
+  KC_CADL,
+};
+
 enum layers {
     _BASE = 0,
     _LOWER,
@@ -24,67 +32,70 @@ enum layers {
 
 #define ROT_L KC_NO
 #define ROT_R KC_NO
-#define _LT_LT_ _______
+#define XXLYRXX _______
 // TODO: ctrl+alt+delete
-#define KC_CADL _______
+
+#define LS_GRV LSFT_T(KC_GRV)
+#define RS_MINS RSFT_T(KC_MINS)
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_BASE] = LAYOUT_stack(
 //    _______, _______, _______, _______, _______, _______, _______, _______, _______,
       KC_TAB,  KC_Q,    KC_W,    KC_F,    KC_P,    KC_B,
       KC_EQL,  KC_A,    KC_R,    KC_S,    KC_T,    KC_G,
-      KC_EXLM, KC_Z,    KC_X,    KC_C,    KC_D,    KC_V,    LT(_RAISE,KC_ESC), MT(MOD_LALT, KC_DELETE),
-                        ROT_L, KC_LGUI, LT(_ADJUST,KC_ENT), KC_SPACE,          MT(MOD_LCTL, KC_BSPACE),
-    // TODO: non-rotary inner thumbkeys MT(MOD_LGUI,copy) and MT(KC_ENT,paste) like how the KC_CVVV thing works
+      LS_GRV,  KC_Z,    KC_X,    KC_C,    KC_D,    KC_V, LT(_RAISE,KC_ENT), ALT_T(KC_DEL),
+                                 ROT_L, KC_LGUI, LT(_LOWER,KC_ESC), KC_SPC, CTL_T(KC_BSPC),
 
 //    _______, _______, _______, _______, _______, _______, _______, _______, _______,
                                  KC_J,    KC_L,    KC_U,    KC_Y,    KC_SCLN, KC_PIPE,
                                  KC_H,    KC_N,    KC_E,    KC_I,    KC_O,    KC_QUOT,
-      TT(_LOWER), KC_NO,         KC_K,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_MINS,
-      LT(_ADJUST,KC_ENT), OSM(MOD_RSFT), KC_GRAVE, KC_LEAD, ROT_R
+      KC_LEAD, KC_CVVV,          KC_K,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, RS_MINS,
+      RCTL_T(KC_ENT), OSM(MOD_RSFT), TT(_LOWER), TT(_RAISE), ROT_R
     ),
     [_LOWER] = LAYOUT_stack(
       _______, KC_EXLM, KC_AT,   KC_LCBR, KC_RCBR, KC_AMPR,
       _______, KC_HASH, KC_DLR,  KC_LPRN, KC_RPRN, KC_ASTR,
-      _______, KC_PERC, KC_CIRC, KC_LBRC, KC_RBRC, XXXXXXX, _______, KC_CADL,
-                                 ROT_L,   _______, _______, _______, _______,
+      _______, KC_PERC, KC_CIRC, KC_LBRC, KC_RBRC, KC_GRV,  _______, KC_DEL,
+                                   ROT_L, KC_APP,  XXLYRXX, _______, KC_BSPC,
 
                                  _______, KC_KP_7, KC_KP_8, KC_KP_9, XXXXXXX,     XXXXXXX,
                                  _______, KC_KP_4, KC_KP_5, KC_KP_6, KC_KP_MINUS, KC_KP_ASTERISK,
-      _LT_LT_, _______,          _______, KC_KP_1, KC_KP_2, KC_KP_3, KC_KP_PLUS,  KC_KP_SLASH,
-      KC_KP_ENTER, KC_KP_0, KC_KP_DOT, _______, ROT_R
+      _______, _______,          _______, KC_KP_1, KC_KP_2, KC_KP_3, KC_KP_PLUS,  KC_KP_SLASH,
+      KC_KP_ENTER, KC_KP_0,  XXLYRXX, KC_KP_DOT, ROT_R
     ),
     [_RAISE] = LAYOUT_stack(
       KC_MPRV, KC_1,    KC_2,    KC_3,    KC_4,    KC_5,
-      KC_MPLY, _______, _______, KC_MS_U, _______, _______,
-      KC_MNXT, _______, KC_MS_L, KC_MS_D, KC_MS_R, _______, _LT_LT_, _______,
-                        ROT_L,   _______, KC_MS_BTN2, KC_MS_BTN1, KC_MS_BTN3,
+      KC_MPLY, KC_BTN4, KC_WH_L, KC_MS_U, KC_WH_R, KC_WH_U,
+      KC_MNXT, KC_BTN5, KC_MS_L, KC_MS_D, KC_MS_R, KC_WH_D, XXLYRXX, _______,
+                                   ROT_L, _______, KC_BTN2, KC_BTN1, KC_BTN3,
 
                                  KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_VOLU,
-                                 KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, _______, KC_MUTE,
-      _______, _______,          KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, _______, KC_VOLD,
-      _______, _______, _______, _______, ROT_R
+                                 _______, KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, KC_MUTE,
+      _______, _______,          _______, KC_HOME, KC_PGDN, KC_PGUP, KC_END,  KC_VOLD,
+      _______, _______, _______, XXLYRXX, ROT_R
     ),
     [_ADJUST] = LAYOUT_stack(
-      _______, KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,
-      _______, _______, _______, _______, _______, _______,
-      _______, _______, _______, _______, _______, _______, _______, _______,
-                                 ROT_L,   _______, _LT_LT_, _______, _______,
+    // TODO: Add GUI/CTL swaps, but somehow without having to enable bootmagic. Can maybe write to eeprom directly? Copy some code?
+      KC_NLCK, KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,
+      KC_CAPS, KC_F11,  KC_F12,  _______, _______, KC_OBRT,
+      KC_SLCK, EEP_RST, _______, _______, NK_TOGG, CG_TOGG, XXLYRXX, KC_CADL,
+                          ROT_L,   ST_MACRO_Sleep, XXLYRXX, _______, _______,
 
-                                 KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,
-                                 _______, _______, _______, _______, _______, KC_F12,
-      _______, _______,          _______, _______, _______, _______, _______, _______,
-      _______, _______, _______, _______, ROT_R
+                                 KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_PSCR,
+                                 KC_OBRT, _______, _______, _______, _______, KC_PAUS,
+      _______, _______,          _______, _______, _______, _______, _______, KC_SYSREQ,
+      _______, _______, XXLYRXX, XXLYRXX, ROT_R
     ),
 };
 
 layer_state_t layer_state_set_user(layer_state_t state) {
+    // Activate ADJUST layer when both LOWER and RAISE are being held
     return update_tri_layer_state(state, _LOWER, _RAISE, _ADJUST);
 }
 
 #ifdef OLED_DRIVER_ENABLE
 oled_rotation_t oled_init_user(oled_rotation_t rotation) {
-	return OLED_ROTATION_180;
+    return OLED_ROTATION_180;
 }
 
 static void render_kyria_logo(void) {
@@ -110,10 +121,13 @@ static void render_qmk_logo(void) {
   oled_write_P(qmk_logo, false);
 }
 
+extern keymap_config_t keymap_config;
+
 static void render_status(void) {
     // QMK Logo and version information
     render_qmk_logo();
-    oled_write_P(PSTR("Kyria rev1.0\n\n"), false);
+
+    oled_write_P(PSTR("Kyria Stash Edition\n"), false);
 
     // Host Keyboard Layer Status
     oled_write_P(PSTR("Layer: "), false);
@@ -131,14 +145,21 @@ static void render_status(void) {
             oled_write_P(PSTR("Adjust\n"), false);
             break;
         default:
-            oled_write_P(PSTR("Undefined\n"), false);
+            oled_write_P(PSTR("\n"), false);
     }
+// x18 x19 are up down arrows, 1a 1b are right left
+    oled_write_P(PSTR("Dial: \x1b\x1a\n"), false);
+
+    // empty status line
+    oled_write_P(PSTR("\n"), false);
 
     // Host Keyboard LED Status
     uint8_t led_usb_state = host_keyboard_leds();
-    oled_write_P(IS_LED_ON(led_usb_state, USB_LED_NUM_LOCK) ? PSTR("NUMLCK ") : PSTR("       "), false);
-    oled_write_P(IS_LED_ON(led_usb_state, USB_LED_CAPS_LOCK) ? PSTR("CAPLCK ") : PSTR("       "), false);
-    oled_write_P(IS_LED_ON(led_usb_state, USB_LED_SCROLL_LOCK) ? PSTR("SCRLCK ") : PSTR("       "), false);
+    oled_write_P(IS_LED_ON(led_usb_state, USB_LED_NUM_LOCK) ? PSTR("NUMLK ") : PSTR("      "), false);
+    oled_write_P(IS_LED_ON(led_usb_state, USB_LED_CAPS_LOCK) ? PSTR("CAPLK ") : PSTR("      "), false);
+    oled_write_P(IS_LED_ON(led_usb_state, USB_LED_SCROLL_LOCK) ? PSTR("SCRLK ") : PSTR("      "), false);
+
+    oled_write_P(keymap_config.swap_lctl_lgui ? PSTR("Mc") : PSTR("Wn"), false);
 }
 
 void oled_task_user(void) {
@@ -152,21 +173,50 @@ void oled_task_user(void) {
 
 #ifdef ENCODER_ENABLE
 void encoder_update_user(uint8_t index, bool clockwise) {
-    if (index == 0) {
-        // Volume control
-        if (clockwise) {
-            tap_code(KC_VOLU);
-        } else {
-            tap_code(KC_VOLD);
-        }
+    if (index == 0) { // Left encoder
+        tap_code(clockwise ? KC_UP : KC_DOWN);
     }
-    else if (index == 1) {
-        // Page up/Page down
-        if (clockwise) {
-            tap_code(KC_PGDN);
-        } else {
-            tap_code(KC_PGUP);
-        }
+    else if (index == 1) { // Right encoder
+        tap_code(clockwise ? KC_LEFT : KC_RIGHT);
     }
 }
 #endif
+
+#define USER_DELAY_SHORT SS_DELAY(50)
+#define USER_DELAY SS_DELAY(100)
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+  static uint16_t copy_paste_timer = 0;
+  switch (keycode) {
+
+    case ST_MACRO_Sleep:
+      if (record->event.pressed) {
+        SEND_STRING(SS_LGUI(SS_TAP(X_X)) USER_DELAY SS_TAP(X_U) USER_DELAY SS_TAP(X_S));
+      }
+      break;
+
+    // From https://github.com/qmk/qmk_firmware/blob/master/keyboards/kyria/keymaps/thomasbaart/keymap.c#L161
+    // but reversed to prevent accidental pastes
+    case KC_CVVV:  // One key copy/paste
+      if (record->event.pressed) {
+        copy_paste_timer = timer_read();
+      } else {
+        if (timer_elapsed(copy_paste_timer) > TAPPING_TERM) {  // Hold, paste
+          tap_code16(LCTL(KC_V));
+        } else { // Tap, copy
+          tap_code16(LCTL(KC_C));
+        }
+      }
+      break;
+
+    case KC_OBRT:
+      oled_set_brightness(oled_get_brightness() + 0x10);
+      break;
+
+    case KC_CADL:
+      tap_code16(LCTL(LALT(KC_DEL)));
+      break;
+
+  }
+  return true;
+}
+
