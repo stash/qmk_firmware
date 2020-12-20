@@ -20,7 +20,6 @@ enum custom_keycodes {
   ST_MACRO_Sleep = SAFE_RANGE,
   KC_CVVV,
   KC_OBRT,
-  KC_CADL,
 };
 
 enum layers {
@@ -37,17 +36,18 @@ enum layers {
 
 #define LS_GRV LSFT_T(KC_GRV)
 #define RS_MINS RSFT_T(KC_MINS)
+#define KC_CADL LALT(LCTL(KC_TAB))
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_BASE] = LAYOUT_stack(
 //    _______, _______, _______, _______, _______, _______, _______, _______, _______,
       KC_TAB,  KC_Q,    KC_W,    KC_F,    KC_P,    KC_B,
       KC_EQL,  KC_A,    KC_R,    KC_S,    KC_T,    KC_G,
-      LS_GRV,  KC_Z,    KC_X,    KC_C,    KC_D,    KC_V, LT(_RAISE,KC_ENT), ALT_T(KC_DEL),
+      KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_D,    KC_V, LT(_RAISE,KC_ENT), ALT_T(KC_DEL),
                                  ROT_L, KC_LGUI, LT(_LOWER,KC_ESC), KC_SPC, CTL_T(KC_BSPC),
 
 //    _______, _______, _______, _______, _______, _______, _______, _______, _______,
-                                 KC_J,    KC_L,    KC_U,    KC_Y,    KC_SCLN, KC_PIPE,
+                                 KC_J,    KC_L,    KC_U,    KC_Y,    KC_SCLN, KC_BSLASH,
                                  KC_H,    KC_N,    KC_E,    KC_I,    KC_O,    KC_QUOT,
       KC_LEAD, KC_CVVV,          KC_K,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, RS_MINS,
       RCTL_T(KC_ENT), OSM(MOD_RSFT), TT(_LOWER), TT(_RAISE), ROT_R
@@ -64,14 +64,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
       KC_KP_ENTER, KC_KP_0,  XXLYRXX, KC_KP_DOT, ROT_R
     ),
     [_RAISE] = LAYOUT_stack(
-      KC_MPRV, KC_1,    KC_2,    KC_3,    KC_4,    KC_5,
-      KC_MPLY, KC_BTN4, KC_WH_L, KC_MS_U, KC_WH_R, KC_WH_U,
-      KC_MNXT, KC_BTN5, KC_MS_L, KC_MS_D, KC_MS_R, KC_WH_D, XXLYRXX, _______,
+      KC_VOLU, KC_1,    KC_2,    KC_3,    KC_4,    KC_5,
+      KC_MUTE, KC_BTN4, KC_WH_L, KC_MS_U, KC_WH_R, KC_WH_U,
+      KC_VOLD, KC_BTN5, KC_MS_L, KC_MS_D, KC_MS_R, KC_WH_D, XXLYRXX, _______,
                                    ROT_L, _______, KC_BTN2, KC_BTN1, KC_BTN3,
 
-                                 KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_VOLU,
-                                 _______, KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, KC_MUTE,
-      _______, _______,          _______, KC_HOME, KC_PGDN, KC_PGUP, KC_END,  KC_VOLD,
+                                 KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_MPLY,
+                                 _______, KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, KC_MNXT,
+      _______, _______,          _______, KC_HOME, KC_PGDN, KC_PGUP, KC_END,  KC_MPRV,
       _______, _______, _______, XXLYRXX, ROT_R
     ),
     [_ADJUST] = LAYOUT_stack(
@@ -96,6 +96,12 @@ layer_state_t layer_state_set_user(layer_state_t state) {
 #ifdef OLED_DRIVER_ENABLE
 oled_rotation_t oled_init_user(oled_rotation_t rotation) {
     return OLED_ROTATION_180;
+}
+
+// from cwebster2's keymap:
+void suspend_power_down_user() {
+    oled_clear();
+    oled_off();
 }
 
 static void render_kyria_logo(void) {
@@ -150,8 +156,13 @@ static void render_status(void) {
 // x18 x19 are up down arrows, 1a 1b are right left
     oled_write_P(PSTR("Dial: \x1b\x1a\n"), false);
 
-    // empty status line
+    uint8_t mods = get_mods() | get_weak_mods();
+    oled_write_P((mods & MOD_MASK_SHIFT) ? PSTR("SHFT ") : PSTR("     "), false);
+    oled_write_P((mods & MOD_MASK_CTRL) ? PSTR("CTRL ") : PSTR("     "), false);
+    oled_write_P((mods & MOD_MASK_ALT) ? PSTR("ALT ") : PSTR("    "), false);
+    oled_write_P((mods & MOD_MASK_GUI) ? PSTR("GUI ") : PSTR("    "), false);
     oled_write_P(PSTR("\n"), false);
+
 
     // Host Keyboard LED Status
     uint8_t led_usb_state = host_keyboard_leds();
@@ -159,7 +170,7 @@ static void render_status(void) {
     oled_write_P(IS_LED_ON(led_usb_state, USB_LED_CAPS_LOCK) ? PSTR("CAPLK ") : PSTR("      "), false);
     oled_write_P(IS_LED_ON(led_usb_state, USB_LED_SCROLL_LOCK) ? PSTR("SCRLK ") : PSTR("      "), false);
 
-    oled_write_P(keymap_config.swap_lctl_lgui ? PSTR("Mc") : PSTR("Wn"), false);
+    oled_write_P(keymap_config.swap_lctl_lgui ? PSTR("Mc") : PSTR("PC"), false);
 }
 
 void oled_task_user(void) {
@@ -169,7 +180,7 @@ void oled_task_user(void) {
         render_kyria_logo();
     }
 }
-#endif
+#endif // OLED_DRIVER_ENABLE
 
 #ifdef ENCODER_ENABLE
 void encoder_update_user(uint8_t index, bool clockwise) {
@@ -211,12 +222,25 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     case KC_OBRT:
       oled_set_brightness(oled_get_brightness() + 0x10);
       break;
-
-    case KC_CADL:
-      tap_code16(LCTL(LALT(KC_DEL)));
-      break;
-
   }
   return true;
 }
 
+#ifdef SPLIT_EXTRA_DATA_ENABLE
+#include "split_common/transport.h"
+
+#if defined(USE_I2C)
+#    error I2C split transport not supported yet
+#endif
+void get_extra_split_data_m2s_user(struct EXTRA_SPLIT_DATA_M2S *data) {
+    uint8_t brightness = oled_get_brightness();
+    if (brightness != data->oled_brightness) {
+        data->oled_brightness = brightness;
+    }
+}
+void handle_extra_split_data_m2s_user(struct EXTRA_SPLIT_DATA_M2S *data) {
+    if (data->oled_brightness != oled_get_brightness()) {
+        oled_set_brightness(data->oled_brightness);
+    }
+}
+#endif
