@@ -21,11 +21,23 @@ static pin_t encoders_pad[] = ENCODERS_PAD_A;
 #    define NUMBER_OF_ENCODERS (sizeof(encoders_pad) / sizeof(pin_t))
 #endif
 
+#ifdef EXTRA_SPLIT_DATA_M2S
+__attribute__((weak)) void get_extra_split_data_m2s_user(struct extra_split_data_m2s *data) { }
+__attribute__((weak)) void get_extra_split_data_m2s_kb(struct extra_split_data_m2s *data) { get_extra_split_data_m2s_user(data); }
+__attribute__((weak)) void handle_extra_split_data_m2s_user(const struct extra_split_data_m2s *data) { }
+__attribute__((weak)) void handle_extra_split_data_m2s_kb(const struct extra_split_data_m2s *data) { handle_extra_split_data_m2s_user(data); }
+#endif
+#ifdef EXTRA_SPLIT_DATA_S2M
+__attribute__((weak)) void get_extra_split_data_s2m_user(struct extra_split_data_s2m *data) { }
+__attribute__((weak)) void get_extra_split_data_s2m_kb(struct extra_split_data_s2m *data) { get_extra_split_data_s2m_user(data); }
+__attribute__((weak)) void handle_extra_split_data_s2m_user(const struct extra_split_data_s2m *data) { }
+__attribute__((weak)) void handle_extra_split_data_s2m_kb(const struct extra_split_data_s2m *data) { handle_extra_split_data_s2m_user(data); }
+#endif
+
 #if defined(USE_I2C)
 
 #    include "i2c_master.h"
 #    include "i2c_slave.h"
-
 typedef struct _I2C_slave_buffer_t {
     matrix_row_t smatrix[ROWS_PER_HAND];
     uint8_t      backlight_level;
@@ -38,7 +50,11 @@ typedef struct _I2C_slave_buffer_t {
 #    ifdef WPM_ENABLE
     uint8_t current_wpm;
 #    endif
+    // TODO I2C S2M extra data
+    // TODO I2C M2S extra data
 } I2C_slave_buffer_t;
+
+// TODO: check that I2C_slave_buffer_t is not over I2C_SLAVE_REG_COUNT size when adding extra data
 
 static I2C_slave_buffer_t *const i2c_buffer = (I2C_slave_buffer_t *)i2c_slave_reg;
 
@@ -57,6 +73,7 @@ static I2C_slave_buffer_t *const i2c_buffer = (I2C_slave_buffer_t *)i2c_slave_re
 // Get rows from other half over i2c
 bool transport_master(matrix_row_t matrix[]) {
     i2c_readReg(SLAVE_I2C_ADDRESS, I2C_KEYMAP_START, (void *)matrix, sizeof(i2c_buffer->smatrix), TIMEOUT);
+    // TODO: read extra data over I2C and call handle_extra_split_data_s2m_kb
 
     // write backlight info
 #    ifdef BACKLIGHT_ENABLE
@@ -91,12 +108,17 @@ bool transport_master(matrix_row_t matrix[]) {
         }
     }
 #    endif
+
+    // TODO: call get_extra_split_data_m2s_kb if that returns true
+
     return true;
 }
 
 void transport_slave(matrix_row_t matrix[]) {
     // Copy matrix to I2C buffer
     memcpy((void *)i2c_buffer->smatrix, (void *)matrix, sizeof(i2c_buffer->smatrix));
+
+    // TODO: call get_extra_split_data_s2m_kb and place that into i2c_buffer
 
 // Read Backlight Info
 #    ifdef BACKLIGHT_ENABLE
@@ -118,6 +140,8 @@ void transport_slave(matrix_row_t matrix[]) {
 #    ifdef WPM_ENABLE
     set_current_wpm(i2c_buffer->current_wpm);
 #    endif
+
+    // TODO: call handle_extra_split_data_m2s_kb
 }
 
 void transport_master_init(void) { i2c_init(); }
@@ -136,6 +160,9 @@ typedef struct _Serial_s2m_buffer_t {
     uint8_t      encoder_state[NUMBER_OF_ENCODERS];
 #    endif
 
+#    ifdef EXTRA_SPLIT_DATA_S2M
+    struct EXTRA_SPLIT_DATA_S2M extra_data;
+#    endif
 } Serial_s2m_buffer_t;
 
 typedef struct _Serial_m2s_buffer_t {
@@ -144,6 +171,9 @@ typedef struct _Serial_m2s_buffer_t {
 #    endif
 #    ifdef WPM_ENABLE
     uint8_t current_wpm;
+#    endif
+#    ifdef EXTRA_SPLIT_DATA_M2S
+    struct EXTRA_SPLIT_DATA_M2S extra_data;
 #    endif
 } Serial_m2s_buffer_t;
 
@@ -238,6 +268,11 @@ bool transport_master(matrix_row_t matrix[]) {
         matrix[i] = serial_s2m_buffer.smatrix[i];
     }
 
+#    ifdef EXTRA_SPLIT_DATA_S2M
+    // if the data coming from the S-->M indicates a change has occurred, handle it
+    handle_extra_split_data_s2m_kb((struct EXTRA_SPLIT_DATA_S2M *)&serial_s2m_buffer.extra_data);
+#    endif
+
 #    ifdef BACKLIGHT_ENABLE
     // Write backlight level for slave to read
     serial_m2s_buffer.backlight_level = is_backlight_enabled() ? get_backlight_level() : 0;
@@ -251,6 +286,11 @@ bool transport_master(matrix_row_t matrix[]) {
     // Write wpm to slave
     serial_m2s_buffer.current_wpm = get_current_wpm();
 #    endif
+
+#    ifdef EXTRA_SPLIT_DATA_M2S
+    // prepare data going M-->S and set a flag
+    get_extra_split_data_m2s_kb((struct EXTRA_SPLIT_DATA_M2S *)&serial_m2s_buffer.extra_data);
+#    endif
     return true;
 }
 
@@ -260,6 +300,11 @@ void transport_slave(matrix_row_t matrix[]) {
     for (int i = 0; i < ROWS_PER_HAND; ++i) {
         serial_s2m_buffer.smatrix[i] = matrix[i];
     }
+#    ifdef EXTRA_SPLIT_DATA_S2M
+    // prepare data going S-->M
+    get_extra_split_data_s2m_kb((struct EXTRA_SPLIT_DATA_S2M *)&serial_s2m_buffer.extra_data);
+#    endif
+
 #    ifdef BACKLIGHT_ENABLE
     backlight_set(serial_m2s_buffer.backlight_level);
 #    endif
@@ -270,6 +315,10 @@ void transport_slave(matrix_row_t matrix[]) {
 
 #    ifdef WPM_ENABLE
     set_current_wpm(serial_m2s_buffer.current_wpm);
+#    endif
+
+#    ifdef EXTRA_SPLIT_DATA_M2S
+    handle_extra_split_data_m2s_kb((struct EXTRA_SPLIT_DATA_M2S *)&serial_m2s_buffer.extra_data);
 #    endif
 }
 
