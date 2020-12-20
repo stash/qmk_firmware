@@ -233,10 +233,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 #    error I2C split transport not supported yet
 #endif
 void get_extra_split_data_m2s_user(struct EXTRA_SPLIT_DATA_M2S *data) {
-    uint8_t brightness = oled_get_brightness();
-    if (brightness != data->oled_brightness) {
-        data->oled_brightness = brightness;
-    }
+    data->oled_brightness = brightness;
 }
 void handle_extra_split_data_m2s_user(struct EXTRA_SPLIT_DATA_M2S *data) {
     if (data->oled_brightness != oled_get_brightness()) {
