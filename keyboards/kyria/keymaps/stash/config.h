@@ -61,6 +61,9 @@
 // Disable mechanically locking keys. Saves 174 firmware bytes!!
 #undef LOCKING_SUPPORT_ENABLE
 
+#define SUPER_ALT_TAB_TIMEOUT 1000
+
+#define EXTRA_SPLIT_DATA_ENABLE
 #define EXTRA_SPLIT_DATA_M2S extra_split_data_m2s
 struct extra_split_data_m2s {
     uint8_t oled_brightness;

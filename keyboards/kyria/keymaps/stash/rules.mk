@@ -15,5 +15,7 @@ SPACE_CADET_ENABLE = no
 GRAVE_ESC_ENABLE = no
 
 DEBOUNCE_TYPE = eager_pk
+SRC += superalttab.c
+SRC += trackball.c
 COMMON_VPATH += "../source/repos/qmk-private"
 COMMON_VPATH += "../src/qmk-private"
