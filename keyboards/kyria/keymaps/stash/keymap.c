@@ -16,7 +16,23 @@
  */
 #include QMK_KEYBOARD_H
 #include "superalttab.h"
+#include "split_common/transport.h"
 #include "trackball.h"
+#include "pointing_device.h"
+
+// NOTE: if you change this, also change EXTRA_SPLIT_DATA_M2S_USER
+typedef struct extra_m2s_user {
+    uint8_t oled_brightness;
+    uint8_t highest_layer;
+} extra_m2s_user_t;
+
+// NOTE: if you change this, also change EXTRA_SPLIT_DATA_S2M_USER
+typedef struct extra_s2m_user {
+    struct {
+        int16_t x, y;
+        uint8_t buttons;
+    } trackball;
+} extra_s2m_user_t;
 
 enum custom_keycodes {
   ST_MACRO_Sleep = SAFE_RANGE,
@@ -117,20 +133,34 @@ static void render_layer(void) {
     switch (layer) {
         case _BASE:
             oled_write_P(PSTR("Default"), invert_layer_text);
+            trackball_set_color(0x00,0x00,0x00,0x3f);
             break;
         case _LOWER:
             oled_write_P(PSTR("Lower"), invert_layer_text);
+            trackball_set_color(0xff,0x00,0x00,0x00);
             break;
         case _RAISE:
             oled_write_P(PSTR("Raise"), invert_layer_text);
+            trackball_set_color(0x00,0xff,0x00,0x00);
             break;
         case _ADJUST:
             oled_write_P(PSTR("Adjust"), invert_layer_text);
+            trackball_set_color(0x00,0x7f,0x7f,0x00);
             break;
         default:
             oled_write_P(PSTR("OTHER"), invert_layer_text);
+            trackball_set_color(0x7f,0x00,0x7f,0x00);
             break;
     }
+    oled_advance_page(true); // newline
+}
+
+static int16_t trackball_x = 0, trackball_y = 0;
+static uint8_t trackball_b = 0;
+void render_track_debug(void) {
+    char buffer[32] = {};
+    snprintf(buffer, sizeof(buffer), " %04x,%04x,%02x", trackball_x, trackball_y, trackball_b);
+    oled_write(buffer, false);
     oled_advance_page(true); // newline
 }
 
@@ -143,7 +173,8 @@ static void render_master(void) {
 
     // x18 x19 are up down arrows, 1a 1b are right left
     //oled_write_P(PSTR("Dial: \x1b\x1a\n"), false);
-    oled_advance_page(true); // newline
+    //oled_advance_page(true); // newline
+    render_track_debug();
 
     // Mods status
     uint8_t mods = get_mods() | get_weak_mods();
@@ -168,15 +199,12 @@ static void render_slave(void) {
     render_layer();
 
     oled_write_P(PSTR("Ball: "), false);
-    char buffer[16] = {};
+    char buffer[32] = {};
     snprintf(buffer, sizeof(buffer), "%02x%02x %02x", trackball_chip_id_h, trackball_chip_id_l, trackball_chip_version);
     oled_write(buffer, false);
-    // if (trackball_present()) {
-    //     oled_write_P(PSTR("Ballin'"), true);
-    // } else {
-    //     oled_write_P(PSTR("disabled"), false);
-    // }
     oled_advance_page(true); // newline
+
+    render_track_debug();
 }
 
 void oled_task_user(void) {
@@ -249,47 +277,98 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   return true;
 }
 
+int8_t transfer_mouse_axis(int16_t *raw) {
+    // HID pointer devices can send between -127 and 127 per report,
+    // see https://docs.qmk.fm/#/feature_pointing_device
+    if (*raw < -127) {
+        *raw += 127;
+        return -127;
+    } else if (*raw > 127) {
+        *raw -= 127;
+        return 127;
+    } else {
+        int8_t value = (int8_t)*raw;
+        *raw = 0;
+        return value;
+    }
+}
+
+
 #ifdef EXTRA_SPLIT_DATA_ENABLE
-#include "split_common/transport.h"
+#define M2S_POLL_INTERVAL 20
+bool get_extra_split_data_m2s_user(uint8_t *data) {
+    static uint16_t poll_timer = 0;
+    if (timer_elapsed(poll_timer) < M2S_POLL_INTERVAL) {
+        return false;
+    }
+    poll_timer = timer_read();
+    extra_m2s_user_t *extra = (extra_m2s_user_t *)data;
+    extra->oled_brightness = oled_get_brightness();
+    extra->highest_layer = get_highest_layer(layer_state);
+    return true;
+}
+void handle_extra_split_data_m2s_user(uint8_t *data) {
+    extra_m2s_user_t *extra = (extra_m2s_user_t *)data;
+    if (extra->oled_brightness != oled_get_brightness()) {
+        oled_set_brightness(extra->oled_brightness);
+    }
 
-#if defined(USE_I2C)
-#    error I2C split transport not supported yet
+    layer_state = 1<<extra->highest_layer;
+}
+
+
+void get_extra_split_data_s2m_user(uint8_t *data) {
+    extra_s2m_user_t *extra = (extra_s2m_user_t *)data;
+    int16_t x, y;
+    uint8_t buttons;
+    if (trackball_read(&x, &y, &buttons)) {
+        trackball_x = extra->trackball.x = (x < 0 ? -x : x) * x;
+        trackball_y = extra->trackball.y = (y < 0 ? -y : y) * y;
+        trackball_b = extra->trackball.buttons = buttons;
+    } else {
+        trackball_x = trackball_y = trackball_b = 0xee;
+        extra->trackball.x = extra->trackball.y = 0;
+        extra->trackball.buttons = 0;
+    }
+}
+
+void handle_extra_split_data_s2m_user(uint8_t *data) {
+    extra_s2m_user_t *extra = (extra_s2m_user_t *)data;
+    trackball_x += extra->trackball.x;
+    trackball_y += extra->trackball.y;
+    trackball_b = extra->trackball.buttons;
+}
+
+void pointing_device_task(void) {
+    static uint8_t buttons_state = 0;
+    while (trackball_x != 0 || trackball_y != 0 || trackball_b != buttons_state) {
+        report_mouse_t mouse = pointing_device_get_report();
+
+        mouse.x = transfer_mouse_axis(&trackball_x);
+        mouse.y = transfer_mouse_axis(&trackball_y);
+        mouse.h = 0;
+        mouse.v = 0;
+        if (trackball_x == 0 && trackball_y == 0) {
+            buttons_state = mouse.buttons = trackball_b;
+        }
+        mouse.buttons = buttons_state;
+        pointing_device_set_report(mouse);
+        pointing_device_send();
+    }
+}
+
 #endif
-void get_extra_split_data_m2s_user(struct EXTRA_SPLIT_DATA_M2S *data) {
-    data->oled_brightness = oled_get_brightness();;
-    data->highest_layer = get_highest_layer(layer_state);
-}
-void handle_extra_split_data_m2s_user(struct EXTRA_SPLIT_DATA_M2S *data) {
-    if (data->oled_brightness != oled_get_brightness()) {
-        oled_set_brightness(data->oled_brightness);
-    }
-    layer_state = 1<<data->highest_layer;
-}
-#endif
 
-
-void matrix_init_user(void) {
-    if (is_keyboard_master()) {
-    }
-    else {
-        //trackball_init();
-        //trackball_set_color(0xff,0,0,0);
-    }
-}
+// only happens for master
+//void matrix_init_user(void) {
+//}
 
 void matrix_scan_user(void) {
-    if (is_keyboard_master()) {
-        check_super_alt_tab();
-    }
-    else {
-
-    }
+    check_super_alt_tab();
 }
 
 // Called after transfer of serial data from master
 void matrix_slave_scan_user(void) {
-    trackball_init();
-    trackball_set_color(0x00,0xff,0xff,0x00);
 }
 
 // from cwebster2's keymap:
@@ -297,3 +376,4 @@ void suspend_power_down_user() {
     oled_clear();
     oled_off();
 }
+

@@ -13,6 +13,7 @@ NKRO_ENABLE = yes
 
 SPACE_CADET_ENABLE = no
 GRAVE_ESC_ENABLE = no
+POINTING_DEVICE_ENABLE = yes
 
 DEBOUNCE_TYPE = eager_pk
 SRC += superalttab.c

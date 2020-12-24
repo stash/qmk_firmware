@@ -22,6 +22,30 @@
 #ifndef TRACKBALL_TIMEOUT
 #    define TRACKBALL_TIMEOUT 100
 #endif
+#ifndef TRACKBALL_ROTATION
+#    define TRACKBALL_ROTATION 0
+#endif
+#if TRACKBALL_ROTATION == 90
+#    define TRACKBALL_L_MAP 3
+#    define TRACKBALL_R_MAP 2
+#    define TRACKBALL_U_MAP 0
+#    define TRACKBALL_D_MAP 1
+#elif TRACKBALL_ROTATION == 180
+#    define TRACKBALL_L_MAP 1
+#    define TRACKBALL_R_MAP 0
+#    define TRACKBALL_U_MAP 3
+#    define TRACKBALL_D_MAP 2
+#elif TRACKBALL_ROTATION == 270
+#    define TRACKBALL_L_MAP 2
+#    define TRACKBALL_R_MAP 3
+#    define TRACKBALL_U_MAP 1
+#    define TRACKBALL_D_MAP 0
+#else
+#    define TRACKBALL_L_MAP 0
+#    define TRACKBALL_R_MAP 1
+#    define TRACKBALL_U_MAP 2
+#    define TRACKBALL_D_MAP 3
+#endif
 
 const uint16_t CHIP_ID = 0xBA11;
 const uint8_t VERSION = 1;
@@ -60,7 +84,7 @@ uint8_t trackball_chip_version = 0;
 static bool initialized = false;
 static struct {
     uint8_t red, green, blue, white;
-} set_colors;
+} set_colors = {0,0,0,0};
 
 static i2c_status_t force_reset(void) {
     uint8_t data[] = {REG_CTRL, MSK_CTRL_RESET};
@@ -139,9 +163,19 @@ bool trackball_reset() {
     return status == I2C_STATUS_SUCCESS;
 }
 
-bool trackball_read(uint16_t *x_axis, uint16_t *y_axis, uint8_t *button) {
-    if (!initialized) {
-        trackball_init();
+bool trackball_read(int16_t *x, int16_t *y, uint8_t *buttons) {
+    if (!initialized) return false;
+    i2c_status_t status;
+    uint8_t buffer[5] = {/* LEFT, RIGHT, UP, DOWN, BUTTON */};
+    status = i2c_readReg(TRACKBALL_ID, REG_LEFT, buffer, sizeof(buffer), TRACKBALL_TIMEOUT);
+    if (status != I2C_STATUS_SUCCESS) {
+        trackball_chip_id_h = 0xee;
+        trackball_chip_id_l = 0x11;
+        trackball_chip_version = (uint8_t)status;
+        return false;
     }
-    return false;
+    *x = buffer[TRACKBALL_R_MAP] - buffer[TRACKBALL_L_MAP];
+    *y = buffer[TRACKBALL_D_MAP] - buffer[TRACKBALL_U_MAP];
+    *buttons = buffer[4] == (1<<7) ? 1 : 0;
+    return true;
 }

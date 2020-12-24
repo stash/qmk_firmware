@@ -22,8 +22,8 @@
 #define DEVICE_VER 0x0103
 
 #ifdef OLED_DRIVER_ENABLE
-  #define OLED_DISPLAY_128X64
-  #define OLED_UPDATE_INTERVAL 250
+#    define OLED_DISPLAY_128X64
+#    define OLED_UPDATE_INTERVAL 250
 #endif
 
 // EC11K encoders:
@@ -64,18 +64,8 @@
 #define SUPER_ALT_TAB_TIMEOUT 1000
 
 #define EXTRA_SPLIT_DATA_ENABLE
-#define EXTRA_SPLIT_DATA_M2S extra_split_data_m2s
-struct extra_split_data_m2s {
-    uint8_t oled_brightness;
-    uint8_t highest_layer;
-    struct {
-        uint8_t red, green, blue, white;
-    } trackball;
-};
-#define EXTRA_SPLIT_DATA_S2M extra_split_data_s2m
-struct extra_split_data_s2m {
-    struct {
-        int16_t x_offset, y_offset;
-        uint8_t button;
-    } trackball;
-};
+#define SERIAL_USE_MULTI_TRANSACTION
+// These have to match the sizes of the structs near the top of keymap.c:
+#define EXTRA_SPLIT_DATA_M2S_USER 2
+#define EXTRA_SPLIT_DATA_S2M_USER 5
+#define TRACKBALL_ROTATION 0

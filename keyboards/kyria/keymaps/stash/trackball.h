@@ -19,11 +19,14 @@
 #    define TRACKBALL_ADDRESS 0x0A
 #endif
 
+typedef struct {
+} trackball_state_t;
+
 extern uint8_t trackball_chip_id_h;
 extern uint8_t trackball_chip_id_l;
 extern uint8_t trackball_chip_version;
 bool trackball_init(void);
 bool trackball_present(void);
-bool trackball_read(uint16_t *x_axis, uint16_t *y_axis, uint8_t *button);
 bool trackball_set_color(uint8_t red, uint8_t green, uint8_t blue, uint8_t white);
 bool trackball_reset(void);
+bool trackball_read(int16_t *x, int16_t *y, uint8_t *buttons);
