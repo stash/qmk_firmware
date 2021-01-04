@@ -21,14 +21,24 @@ static pin_t encoders_pad[] = ENCODERS_PAD_A;
 #    define NUMBER_OF_ENCODERS (sizeof(encoders_pad) / sizeof(pin_t))
 #endif
 
-__attribute__((weak)) bool get_extra_split_data_m2s_kb(uint8_t *data) { return false; }
-__attribute__((weak)) void handle_extra_split_data_m2s_kb(uint8_t *data) {}
-__attribute__((weak)) bool get_extra_split_data_m2s_user(uint8_t *data) { return false; }
-__attribute__((weak)) void handle_extra_split_data_m2s_user(uint8_t *data) {}
-__attribute__((weak)) void get_extra_split_data_s2m_kb(uint8_t *data) {}
-__attribute__((weak)) void handle_extra_split_data_s2m_kb(uint8_t *data) {}
-__attribute__((weak)) void get_extra_split_data_s2m_user(uint8_t *data) {}
-__attribute__((weak)) void handle_extra_split_data_s2m_user(uint8_t *data) {}
+#ifdef EXTRA_SPLIT_DATA_ENABLE
+#    ifdef EXTRA_SPLIT_DATA_M2S_KB
+__attribute__((weak)) bool get_extra_split_data_m2s_kb(volatile uint8_t data[EXTRA_SPLIT_DATA_M2S_KB]) { return false; }
+__attribute__((weak)) void handle_extra_split_data_m2s_kb(volatile uint8_t data[EXTRA_SPLIT_DATA_M2S_KB]) {}
+#    endif
+#    ifdef EXTRA_SPLIT_DATA_M2S_USER
+__attribute__((weak)) bool get_extra_split_data_m2s_user(volatile uint8_t data[EXTRA_SPLIT_DATA_M2S_USER]) { return false; }
+__attribute__((weak)) void handle_extra_split_data_m2s_user(volatile uint8_t data[EXTRA_SPLIT_DATA_M2S_USER]) {}
+#    endif
+#    ifdef EXTRA_SPLIT_DATA_S2M_KB
+__attribute__((weak)) bool get_extra_split_data_s2m_kb(volatile uint8_t data[EXTRA_SPLIT_DATA_S2M_KB]) { return false; }
+__attribute__((weak)) void handle_extra_split_data_s2m_kb(volatile uint8_t data[EXTRA_SPLIT_DATA_S2M_KB]) {}
+#    endif
+#    ifdef EXTRA_SPLIT_DATA_S2M_USER
+__attribute__((weak)) bool get_extra_split_data_s2m_user(volatile uint8_t data[EXTRA_SPLIT_DATA_S2M_USER]) { return false; }
+__attribute__((weak)) void handle_extra_split_data_s2m_user(volatile uint8_t data[EXTRA_SPLIT_DATA_S2M_USER]) {}
+#    endif
+#endif
 
 #undef EXTRA_SPLIT_DATA_M2S
 #if defined(EXTRA_SPLIT_DATA_M2S_KB) || defined(EXTRA_SPLIT_DATA_M2S_USER)
@@ -38,9 +48,11 @@ __attribute__((weak)) void handle_extra_split_data_s2m_user(uint8_t *data) {}
 #if defined(EXTRA_SPLIT_DATA_S2M_KB) || defined(EXTRA_SPLIT_DATA_S2M_USER)
 #    define EXTRA_SPLIT_DATA_S2M
 #endif
+
 #if defined(EXTRA_SPLIT_DATA_ENABLE) && !defined(SERIAL_USE_MULTI_TRANSACTION)
-#    error "EXTRA_SPLIT_DATA_ENABLE requires SERIAL_USE_MULTI_TRANSACTION"
+#    error "EXTRA_SPLIT_DATA_ENABLE requires SERIAL_USE_MULTI_TRANSACTION to be set"
 #endif
+
 
 #if defined(USE_I2C)
 
@@ -58,8 +70,18 @@ typedef struct _I2C_slave_buffer_t {
 #    ifdef WPM_ENABLE
     uint8_t current_wpm;
 #    endif
-    // TODO I2C S2M extra kb & user data
-    // TODO I2C M2S extra kb & user data
+#    ifdef EXTRA_SPLIT_DATA_M2S_KB
+    uint8_t extra_m2s_kb[EXTRA_SPLIT_DATA_M2S_KB];
+#    endif
+#    ifdef EXTRA_SPLIT_DATA_M2S_USER
+    uint8_t extra_m2s_user[EXTRA_SPLIT_DATA_M2S_USER];
+#    endif
+#    ifdef EXTRA_SPLIT_DATA_S2M_KB
+    uint8_t extra_s2m_kb[EXTRA_SPLIT_DATA_S2M_KB];
+#    endif
+#    ifdef EXTRA_SPLIT_DATA_S2M_USER
+    uint8_t extra_s2m_user[EXTRA_SPLIT_DATA_S2M_USER];
+#    endif
 } I2C_slave_buffer_t;
 
 // TODO: check that I2C_slave_buffer_t is not over I2C_SLAVE_REG_COUNT size when adding extra data
@@ -71,6 +93,7 @@ static I2C_slave_buffer_t *const i2c_buffer = (I2C_slave_buffer_t *)i2c_slave_re
 #    define I2C_KEYMAP_START offsetof(I2C_slave_buffer_t, smatrix)
 #    define I2C_ENCODER_START offsetof(I2C_slave_buffer_t, encoder_state)
 #    define I2C_WPM_START offsetof(I2C_slave_buffer_t, current_wpm)
+// TODO: defines for the offset of the extra data fields
 
 #    define TIMEOUT 100
 
@@ -296,22 +319,28 @@ void transport_rgblight_slave(void) {
 
 #    ifdef EXTRA_SPLIT_DATA_ENABLE
 void transport_extra_master(void) {
+    Serial_m2s_extra_buffer_t m2s_temp;
     bool txn_needed = false;
 #        ifdef EXTRA_SPLIT_DATA_M2S_KB
-    txn_needed |= get_extra_split_data_m2s_kb((uint8_t *)serial_m2s_extra_buffer.kb);
+    txn_needed |= get_extra_split_data_m2s_kb(m2s_temp.kb);
 #        endif
 #        ifdef EXTRA_SPLIT_DATA_M2S_USER
-    txn_needed |= get_extra_split_data_m2s_user((uint8_t *)serial_m2s_extra_buffer.user);
+    txn_needed |= get_extra_split_data_m2s_user(m2s_temp.user);
 #        endif
     if (!txn_needed) return;
-    if (soft_serial_transaction(XCHG_EXTRA_DATA) == TRANSACTION_END) {
+    else {
+        // get as close to an atomic copy as possible
+        serial_m2s_extra_buffer = m2s_temp;
+        if (soft_serial_transaction(XCHG_EXTRA_DATA) != TRANSACTION_END) return;
+    }
+
+    Serial_s2m_extra_buffer_t s2m_temp = serial_s2m_extra_buffer;
 #        ifdef EXTRA_SPLIT_DATA_S2M_KB
-        handle_extra_split_data_s2m_kb((uint8_t *)serial_s2m_extra_buffer.kb);
+    handle_extra_split_data_s2m_kb(s2m_temp.kb);
 #        endif
 #        ifdef EXTRA_SPLIT_DATA_S2M_USER
-        handle_extra_split_data_s2m_user((uint8_t *)serial_s2m_extra_buffer.user);
+    handle_extra_split_data_s2m_user(s2m_temp.user);
 #        endif
-    }
 }
 
 void transport_extra_slave(void) {
@@ -319,21 +348,24 @@ void transport_extra_slave(void) {
         // because serial might mess with it during an interrupt?
         Serial_m2s_extra_buffer_t m2s_temp = serial_m2s_extra_buffer;
 #        ifdef EXTRA_SPLIT_DATA_M2S_KB
-        handle_extra_split_data_m2s_kb(&m2s_temp.kb[0]);
+        handle_extra_split_data_m2s_kb(m2s_temp.kb);
 #        endif
 #        ifdef EXTRA_SPLIT_DATA_M2S_USER
-        handle_extra_split_data_m2s_user(&m2s_temp.user[0]);
+        handle_extra_split_data_m2s_user(m2s_temp.user);
 #        endif
 
         Serial_s2m_extra_buffer_t s2m_temp;
+        bool changed = false;
 #        ifdef EXTRA_SPLIT_DATA_S2M_KB
-        get_extra_split_data_s2m_kb(&s2m_temp.kb[0]);
+        changed |= get_extra_split_data_s2m_kb(s2m_temp.kb);
 #        endif
 #        ifdef EXTRA_SPLIT_DATA_S2M_USER
-        get_extra_split_data_s2m_user(&s2m_temp.user[0]);
+        changed |= get_extra_split_data_s2m_user(s2m_temp.user);
 #        endif
-        // likewise get as close to an atomic copy as possible
-        serial_s2m_extra_buffer = s2m_temp;
+        if (changed) {
+            // likewise get as close to an atomic copy as possible
+            serial_s2m_extra_buffer = s2m_temp;
+        }
 
         status_extra = TRANSACTION_END;
     }

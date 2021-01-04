@@ -63,9 +63,12 @@
 
 #define SUPER_ALT_TAB_TIMEOUT 1000
 
+// Trackball needs extra split data to flow from the right hand side
 #define EXTRA_SPLIT_DATA_ENABLE
 #define SERIAL_USE_MULTI_TRANSACTION
 // These have to match the sizes of the structs near the top of keymap.c:
 #define EXTRA_SPLIT_DATA_M2S_USER 2
 #define EXTRA_SPLIT_DATA_S2M_USER 5
-#define TRACKBALL_ROTATION 0
+#define TRACKBALL_ROTATION 270
+#define TRACKBALL_SCROLL_FACTOR 4
+#define TRACKBALL_DEBUG

@@ -19,14 +19,37 @@
 #    define TRACKBALL_ADDRESS 0x0A
 #endif
 
-typedef struct {
-} trackball_state_t;
+typedef struct _trackball_state_t {
+    int16_t x, y;
+    uint8_t button;
+    // COULDDO: this could maybe be packed down to 21 bits (three bytes):
+    //   x and y: 9 bits plus sign (so, 10 each) since they're the sum of two int8_t's
+    //   button: one bit
+} __attribute__((packed)) trackball_state_t;
 
-extern uint8_t trackball_chip_id_h;
-extern uint8_t trackball_chip_id_l;
-extern uint8_t trackball_chip_version;
+typedef enum _trackball_status {
+    TRACKBALL_OK,
+    TRACKBALL_OFF,
+
+    TRACKBALL_ERROR = -128,
+    TRACKBALL_ERROR_BAD_CHIP_ID,
+    TRACKBALL_ERROR_RESET,
+    TRACKBALL_ERROR_INIT,
+    TRACKBALL_ERROR_COLOR,
+    TRACKBALL_ERROR_POLL,
+} trackball_status_t;
+
+#ifdef TRACKBALL_DEBUG
+extern int8_t trackball_status;
+#endif
 bool trackball_init(void);
-bool trackball_present(void);
 bool trackball_set_color(uint8_t red, uint8_t green, uint8_t blue, uint8_t white);
-bool trackball_reset(void);
-bool trackball_read(int16_t *x, int16_t *y, uint8_t *buttons);
+// Polls trackball data over local I2C
+bool trackball_poll(void);
+// Use these to transfer data between split sides:
+void trackball_get_raw(trackball_state_t *state);
+void trackball_set_raw(trackball_state_t state);
+// Clears the local trackball state:
+void trackball_clear(void);
+// Reports movement and buttons to host. Calls trackball_clear at its end.
+void trackball_report(bool scrolling, uint8_t buttons_forced);

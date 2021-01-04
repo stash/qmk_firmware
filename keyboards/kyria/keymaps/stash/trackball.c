@@ -14,8 +14,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "quantum.h"
+#include <inttypes.h>
 #include "trackball.h"
 #include "i2c_master.h"
+#include "pointing_device.h"
+
+extern char oled_debug_str[32];
 
 // For reasons I don't understand, this low bit always needs to be set, otherwise even reads will fail
 #define TRACKBALL_ID ((TRACKBALL_ADDRESS << 1) | I2C_WRITE)
@@ -77,14 +81,14 @@ const uint8_t MSK_CTRL_RESET = 0b00000010;
 const uint8_t MSK_CTRL_FREAD = 0b00000100;
 const uint8_t MSK_CTRL_FWRITE = 0b00001000;
 
-uint8_t trackball_chip_id_h = 0;
-uint8_t trackball_chip_id_l = 0;
-uint8_t trackball_chip_version = 0;
 
 static bool initialized = false;
 static struct {
     uint8_t red, green, blue, white;
 } set_colors = {0,0,0,0};
+int8_t trackball_status = TRACKBALL_OFF;
+static trackball_state_t trackball_state = { .x = 0, .y = 0, .button = 0 };
+
 
 static i2c_status_t force_reset(void) {
     uint8_t data[] = {REG_CTRL, MSK_CTRL_RESET};
@@ -97,41 +101,29 @@ bool trackball_init(void) {
 
     status = force_reset();
     if (status != I2C_STATUS_SUCCESS) {
-        trackball_chip_id_h = 0xee;
-        trackball_chip_id_l = 0x05;
-        trackball_chip_version = (uint8_t)status;
+        trackball_status = TRACKBALL_ERROR_RESET;
         return false;
     }
 
-    uint8_t buffer[3] = {};
+    uint8_t buffer[3] = {0,0,0};
     status = i2c_readReg(TRACKBALL_ID, REG_CHIP_ID_L, buffer, sizeof(buffer), TRACKBALL_TIMEOUT);
     if (status == I2C_STATUS_SUCCESS) {
-        trackball_chip_id_l = buffer[0];
-        trackball_chip_id_h = buffer[1];
-        trackball_chip_version = buffer[2];
         uint16_t id = ((uint16_t)buffer[1] << 8) + buffer[0];
         if (id != CHIP_ID || buffer[2] != VERSION) {
-            trackball_chip_id_h = 0xee;
-            trackball_chip_id_l = 0x01;
-            trackball_chip_version = (uint8_t)status;
+            trackball_status = TRACKBALL_ERROR_BAD_CHIP_ID;
             return false;
         }
         initialized = true;
     } else {
-        trackball_chip_id_h = 0xee;
-        trackball_chip_id_l = 0x02;
-        trackball_chip_version = (uint8_t)status;
+        trackball_status = TRACKBALL_ERROR_INIT;
         return false;
     }
 
-    return initialized;
+    // TODO: support interrupt pin, no pullup/down, input mode;
+    // then need to use REG_INT on trackball to enable it on the trackball side
 
-    // TODO: support interrupt pin, no pullup/down, input;
-    // need to use REG_INT to enable it on the trackball side
-}
-
-bool trackball_present(void) {
-    return initialized;
+    trackball_status = TRACKBALL_OK;
+    return true;
 }
 
 bool trackball_set_color(uint8_t red, uint8_t green, uint8_t blue, uint8_t white) {
@@ -151,31 +143,102 @@ bool trackball_set_color(uint8_t red, uint8_t green, uint8_t blue, uint8_t white
         set_colors.green = green;
         set_colors.blue = blue;
         set_colors.white = white;
+        trackball_status = TRACKBALL_OK;
         return true;
     }
+    trackball_status = TRACKBALL_ERROR_COLOR;
     return false;
 }
 
-bool trackball_reset() {
+bool trackball_poll() {
     if (!initialized) return false;
-    i2c_status_t status = force_reset();
-    initialized = false;
-    return status == I2C_STATUS_SUCCESS;
-}
-
-bool trackball_read(int16_t *x, int16_t *y, uint8_t *buttons) {
-    if (!initialized) return false;
-    i2c_status_t status;
-    uint8_t buffer[5] = {/* LEFT, RIGHT, UP, DOWN, BUTTON */};
-    status = i2c_readReg(TRACKBALL_ID, REG_LEFT, buffer, sizeof(buffer), TRACKBALL_TIMEOUT);
+    uint8_t buffer[5]; // LEFT, RIGHT, UP, DOWN, BUTTON
+    i2c_status_t status = i2c_readReg(TRACKBALL_ID, REG_LEFT, buffer, sizeof(buffer), TRACKBALL_TIMEOUT);
     if (status != I2C_STATUS_SUCCESS) {
-        trackball_chip_id_h = 0xee;
-        trackball_chip_id_l = 0x11;
-        trackball_chip_version = (uint8_t)status;
+        trackball_status = TRACKBALL_ERROR_POLL;
         return false;
     }
-    *x = buffer[TRACKBALL_R_MAP] - buffer[TRACKBALL_L_MAP];
-    *y = buffer[TRACKBALL_D_MAP] - buffer[TRACKBALL_U_MAP];
-    *buttons = buffer[4] == (1<<7) ? 1 : 0;
+    //snprintf(oled_debug_str, sizeof(oled_debug_str), "tbp %02x%02x%02x%02x%02x", (int)buffer[0], (int)buffer[1], (int)buffer[2], (int)buffer[3], (int)buffer[4]);
+
+    trackball_state.x += buffer[TRACKBALL_R_MAP] - buffer[TRACKBALL_L_MAP];
+    trackball_state.y += buffer[TRACKBALL_D_MAP] - buffer[TRACKBALL_U_MAP];
+    trackball_state.button = (buffer[4] == 0x80) ? 1 : 0;
+    snprintf(oled_debug_str, sizeof(oled_debug_str), "tbs %ld:%ld:%d", (long)trackball_state.x,(long)trackball_state.y,(int)trackball_state.button);
     return true;
+}
+
+static int8_t transfer_axis(int16_t *axis) {
+    // HID pointer devices can send between -127 and 127 per report,
+    // see https://docs.qmk.fm/#/feature_pointing_device
+    if (*axis < -127) {
+        *axis += 127;
+        return -127;
+    } else if (*axis > 127) {
+        *axis -= 127;
+        return 127;
+    } else {
+        int8_t value = (int8_t)*axis;
+        *axis = 0;
+        return value;
+    }
+}
+
+void trackball_get_raw(trackball_state_t *state) {
+    //memcpy(state, &trackball_state, sizeof(trackball_state_t));
+    *state = trackball_state;
+}
+void trackball_set_raw(trackball_state_t state) {
+    //memcpy(&trackball_state, &state, sizeof(trackball_state_t));
+    trackball_state = state;
+    dprintf("tb set %d %d %d\n", (int)state.x, (int)state.y, (int)state.button);
+}
+void trackball_clear(void) {
+    trackball_state.x = trackball_state.y = 0;
+    trackball_state.button = 0;
+}
+
+void trackball_report(bool scrolling, uint8_t buttons_forced) {
+    static uint8_t buttons_state = 0;
+
+    int16_t x = trackball_state.x;
+    int16_t y = trackball_state.y;
+    uint8_t buttons = trackball_state.button | buttons_forced;
+    if (x == 0 && y == 0 && buttons == 0) return; // no change
+
+    //dprintf("trackball set %04" PRIx16 " %04" PRIx16 " %02" PRIx8 "\n", trackball_state.x, trackball_state.y, trackball_state.button);
+    //dprintf("tb x %d\n", (int)x);
+    //dprintf("tb y %d\n", (int)y);
+    //dprintf("tb b %d\n", (int)buttons);
+
+    // Give movement a quadratic curve
+    //x *= (x < 0) ? -x : x;
+    //y *= (y < 0) ? -y : y;
+
+#ifdef TRACKBALL_SCROLL_FACTOR
+    // optionally scale scrolling speed
+    if (scrolling) {
+        x *= TRACKBALL_SCROLL_FACTOR;
+        y *= TRACKBALL_SCROLL_FACTOR;
+    }
+#endif
+
+    while (x != 0 || y != 0 || buttons != buttons_state) {
+        int8_t px = transfer_axis(&x);
+        int8_t py = transfer_axis(&y);
+        report_mouse_t report = pointing_device_get_report();
+        report.x = scrolling ? 0 : px;
+        report.y = scrolling ? 0 : py;
+        report.h = scrolling ? px : 0;
+        report.v = scrolling ? py : 0;
+        if (x == 0 && y == 0) {
+            // Only adjust button state on very last report
+            buttons_state = buttons;
+        }
+        report.buttons = buttons_state;
+
+        pointing_device_set_report(report);
+        pointing_device_send();
+    }
+
+    trackball_clear();
 }
