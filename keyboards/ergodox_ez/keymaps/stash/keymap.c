@@ -35,10 +35,9 @@ enum my_layers {
 // space-cadet style minus (except the space cadet code doesn't actually work for it)
 #define KC_SMIN RSFT_T(KC_MINS)
 
-// TODO: this needs special treatment when in "Mac mode" to send Opt+BKSP instead
-// Support a Enter+Bksp chord for quick word deletion
-// On my Kyria Enter is RCTL_T(KC_ENT) already, but could use the same special treatment for Mac
-#define KC_SNTR RCTL_T(KC_ENTER)
+// TODO: this needs special treatment so it works when in Windows (Ctrl+Bksp instead of Opt+Bksp)
+// Support chord for quick word deletion
+#define KC_SNTR RALT_T(KC_ENTER)
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [_BASE] = LAYOUT_ergodox_pretty(
