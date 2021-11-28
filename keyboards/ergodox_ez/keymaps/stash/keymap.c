@@ -34,7 +34,6 @@ enum my_layers {
 
 // space-cadet style minus (except the space cadet code doesn't actually work for it)
 #define KC_SMIN RSFT_T(KC_MINS)
-#define KC_SGRV LSFT_T(KC_GRAVE)
 
 // TODO: this needs special treatment when in "Mac mode" to send Opt+BKSP instead
 // Support a Enter+Bksp chord for quick word deletion
@@ -46,8 +45,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     KC_CVVV,        KC_1,           KC_2,           KC_3,           KC_4,           KC_5,           TG(_QWERTY),                                    TT(_FNUM),      KC_6,           KC_7,           KC_8,           KC_9,           KC_0,           KC_MPLY,
     KC_TAB,         KC_Q,           KC_W,           KC_F,           KC_P,           KC_B,           KC_LPRN,                                        KC_RPRN,        KC_J,           KC_L,           KC_U,           KC_Y,           KC_SCOLON,      KC_BSLASH,
     KC_EQUAL,       KC_A,           KC_R,           KC_S,           KC_T,           KC_G,                                                                           KC_H,           KC_N,           KC_E,           KC_I,           KC_O,           KC_QUOTE,
-    KC_SGRV,        KC_Z,           KC_X,           KC_C,           KC_D,           KC_V,           KC_ENTER,                                       KC_LEAD,        KC_K,           KC_M,           KC_COMMA,       KC_DOT,         KC_SLASH,       KC_SMIN,
-    KC_SuAT,        KC_QUOT,        KC_LBRACKET,    KC_RBRACKET,    KC_ESC,                                                                                                         KC_LEFT,        KC_DOWN,        KC_UP,          KC_RIGHT,       TT(_ADJUST),
+    KC_LSHIFT,      KC_Z,           KC_X,           KC_C,           KC_D,           KC_V,           KC_ENTER,                                       KC_LEAD,        KC_K,           KC_M,           KC_COMMA,       KC_DOT,         KC_SLASH,       KC_SMIN,
+    KC_SuAT,        KC_GRAVE,       KC_LBRACKET,    KC_RBRACKET,    KC_ESC,                                                                                                         KC_LEFT,        KC_DOWN,        KC_UP,          KC_RIGHT,       TT(_ADJUST),
                                                                                                     KC_DELETE,      LGUI_T(KC_TAB), MEH_T(KC_HOME), HYPR_T(KC_END),
                                                                                                                     OSM(MOD_LALT),  RALT_T(KC_PGUP),
                                                                                     KC_SPACE,       KC_BSPACE,      OSM(MOD_LCTL),  RCTL_T(KC_PGDN), KC_SNTR, OSM(MOD_RSFT)
