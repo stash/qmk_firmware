@@ -17,6 +17,9 @@
 
 #include QMK_KEYBOARD_H
 #include "action_tapping.h"
+#ifdef UNICODE_ENABLE
+# include "unicode.h"
+#endif
 
 extern keymap_config_t keymap_config;
 
@@ -26,7 +29,7 @@ enum custom_keycodes { SET_WIN = SAFE_RANGE, SET_MAC, SUPALTT, CVVV };
 
 enum dance_codes { DANCE_TSHIFT = 0, DANCE_CVVV, DANCE_TEST, DANCE_MAX };
 #define TD_TEST TD(DANCE_TEST)
-#define TD_CVVV TD(DANCE_TEST)
+#define TD_CVVV TD(DANCE_CVVV)
 
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -107,8 +110,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 keymap_config.raw = eeconfig_read_keymap();
                 keymap_config.swap_lctl_lgui = keymap_config.swap_rctl_rgui = 0;
                 eeconfig_update_keymap(keymap_config.raw);
-                // TODO: set windows unicode mode, UC_WIN
-                // set_unicode_input_mode(UNICODE_MODE_WINDOWS);
+#ifdef UNICODE_ENABLE
+                set_unicode_input_mode(UNICODE_MODE_WINDOWS);
+#endif
                 clear_keyboard();
             }
             return false; // stop processing
@@ -117,8 +121,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 set_single_persistent_default_layer(_MAC);
                 keymap_config.swap_lctl_lgui = keymap_config.swap_rctl_rgui = 1;
                 eeconfig_update_keymap(keymap_config.raw);
-                // TODO: set mac unicode mode, UC_MAC
-                // set_unicode_input_mode(UNICODE_MODE_MACOS);
+#ifdef UNICODE_ENABLE
+                set_unicode_input_mode(UNICODE_MODE_MACOS);
+#endif
                 clear_keyboard();
             }
             return false; // stop processing
