@@ -25,12 +25,14 @@ enum layer_names { _WINDOWS, _MAC, _LOWER, _RAISE, _ADJUST };
 enum custom_keycodes { SET_WIN = SAFE_RANGE, SET_MAC, SUPALTT, CVVV };
 
 enum dance_codes { DANCE_TSHIFT = 0, DANCE_CVVV, DANCE_TEST, DANCE_MAX };
+#define TD_TEST TD(DANCE_TEST)
+#define TD_CVVV TD(DANCE_TEST)
 
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 [_WINDOWS] = LAYOUT_split_4x6_5(
-  KC_GRV,   KC_1,   KC_2,    KC_3,    KC_4,    KC_5,        KC_6,   KC_7,   KC_8,    KC_9,   KC_0,    TD(DANCE_TEST),
+  TD_CVVV,  KC_1,   KC_2,    KC_3,    KC_4,    KC_5,        KC_6,   KC_7,   KC_8,    KC_9,   KC_0,    MEH(KC_M),
   KC_TAB,   KC_Q,   KC_W,    KC_F,    KC_P,    KC_B,        KC_J,   KC_L,   KC_U,    KC_Y,   KC_SCLN, KC_BSLS,
   KC_EQUAL, KC_A,   KC_R,    KC_S,    KC_T,    KC_G,        KC_H,   KC_N,   KC_E,    KC_I,   KC_O,    KC_QUOT,
   KC_LSFT,  KC_Z,   KC_X,    KC_C,    KC_D,    KC_V,        KC_K,   KC_M,   KC_COMM, KC_DOT, KC_SLSH, KC_MINS,
@@ -40,7 +42,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 [_MAC] = LAYOUT_split_4x6_5(
   // NOTE: SET_MAC will exchange CTL and GUI so that tap dance works, so actually GUI & CTL below are swapped
-  KC_GRV,   KC_1,   KC_2,    KC_3,    KC_4,    KC_5,        KC_6,   KC_7,   KC_8,    KC_9,   KC_0,    TD(DANCE_TEST),
+  TD_CVVV,  KC_1,   KC_2,    KC_3,    KC_4,    KC_5,        KC_6,   KC_7,   KC_8,    KC_9,   KC_0,    MEH(KC_M),
   KC_TAB,   KC_Q,   KC_W,    KC_F,    KC_P,    KC_B,        KC_J,   KC_L,   KC_U,    KC_Y,   KC_SCLN, KC_BSLS,
   KC_EQUAL, KC_A,   KC_R,    KC_S,    KC_T,    KC_G,        KC_H,   KC_N,   KC_E,    KC_I,   KC_O,    KC_QUOT,
   KC_LSFT,  KC_Z,   KC_X,    KC_C,    KC_D,    KC_V,        KC_K,   KC_M,   KC_COMM, KC_DOT, KC_SLSH, KC_MINS,
@@ -60,16 +62,16 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 [_RAISE] = LAYOUT_split_4x6_5(
   KC_F12,  KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,       KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,
   _______, XXXXXXX, XXXXXXX, KC_UP,   KC_ENT,  XXXXXXX,     KC_NUM,  KC_PSCR, KC_SCRL, KC_PAUS, XXXXXXX, _______,
-  _______, KC_GRV,  KC_LEFT, KC_DOWN, KC_RGHT, KC_ENT,      KC_PGUP, KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, _______,
-  _______, KC_GRV,  KC_LBRC, KC_RBRC, KC_LPRN, KC_RPRN,     KC_PGDN, KC_HOME, KC_PGDN, KC_PGUP, KC_END,  _______,
-                             KC_LALT, KC_LCTL, KC_DEL,      KC_INS,  KC_RALT, KC_MENU,
+  _______, KC_GRV,  KC_LEFT, KC_DOWN, KC_RGHT, KC_ENT,      XXXXXXX, KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, _______,
+  _______, KC_GRV,  KC_LBRC, KC_RBRC, KC_LPRN, KC_RPRN,     XXXXXXX, KC_HOME, KC_PGDN, KC_PGUP, KC_END,  _______,
+                             KC_LALT, KC_LCTL, KC_DEL,      KC_INS,  CW_TOGG, KC_MENU,
                                       KC_LGUI, _______,     _______, _______
   ),
 
 [_ADJUST] = LAYOUT_split_4x6_5(
   QK_BOOT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, SET_WIN,     SET_MAC, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, RGB_TOG,
   XXXXXXX, TO(0),   TO(1),   XXXXXXX, XXXXXXX, XXXXXXX,     XXXXXXX, RGB_SPI, RGB_SAI, RGB_HUI, RGB_VAI, RGB_MOD,
-  XXXXXXX, XXXXXXX, QK_BOOT, XXXXXXX, XXXXXXX, XXXXXXX,     XXXXXXX, RGB_SPD, RGB_SAD, RGB_HUD, RGB_VAD, RGB_RMOD,
+  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, TD_TEST, XXXXXXX,     XXXXXXX, RGB_SPD, RGB_SAD, RGB_HUD, RGB_VAD, RGB_RMOD,
   KC_LSFT, KC_NO, QK_REBOOT, EE_CLR,  XXXXXXX, XXXXXXX,     XXXXXXX, RGB_M_B, RGB_M_R, RGB_M_G, RGB_M_P, KC_RSFT,
                              _______, _______, _______,     _______, _______, _______,
                                       _______, _______,     _______, _______
@@ -79,6 +81,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 layer_state_t layer_state_set_user(layer_state_t state) {
     state = update_tri_layer_state(state, _LOWER, _RAISE, _ADJUST);
     switch(get_highest_layer(state)) {
+        // TODO: make these other layers respect the brightness setting (or use a suitably low one if brightness is all the way off)
         case _LOWER:
             rgb_matrix_sethsv_noeeprom(HSV_GOLD);
             break;
@@ -89,6 +92,7 @@ layer_state_t layer_state_set_user(layer_state_t state) {
             rgb_matrix_sethsv_noeeprom(HSV_RED);
             break;
         default:
+            // TODO: make this do whatever is in eeprom
             rgb_matrix_sethsv_noeeprom(HSV_CYAN);
             break;
     }
@@ -103,7 +107,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 keymap_config.raw = eeconfig_read_keymap();
                 keymap_config.swap_lctl_lgui = keymap_config.swap_rctl_rgui = 0;
                 eeconfig_update_keymap(keymap_config.raw);
-                // TODO: set windows unicode mode
+                // TODO: set windows unicode mode, UC_WIN
+                // set_unicode_input_mode(UNICODE_MODE_WINDOWS);
                 clear_keyboard();
             }
             return false; // stop processing
@@ -112,7 +117,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 set_single_persistent_default_layer(_MAC);
                 keymap_config.swap_lctl_lgui = keymap_config.swap_rctl_rgui = 1;
                 eeconfig_update_keymap(keymap_config.raw);
-                // TODO: set mac unicode mode
+                // TODO: set mac unicode mode, UC_MAC
+                // set_unicode_input_mode(UNICODE_MODE_MACOS);
                 clear_keyboard();
             }
             return false; // stop processing
@@ -167,7 +173,7 @@ td_tap_t dance_state[DANCE_MAX] = {
         .on_hold = (KC_B),
         .on_double_tap = LSFT(KC_C),
         .on_double_hold = (KC_D),
-        .timing = (TAPPING_TERM),
+        .timing = 185,
         .hold_does_tap = true,
         .step = NO_TAP
     },
@@ -240,10 +246,10 @@ void dance_finished(qk_tap_dance_state_t *state, void *user_data) {
     switch (tap->step) {
         case SINGLE_TAP:
             if (IS_QK_ONE_SHOT_MOD(tap->on_tap)) {
-                uint16_t mod = tap->on_tap & 0x1f;
+                uint16_t mods = QK_ONE_SHOT_MOD_GET_MODS(tap->on_tap);
                 // see quantum/action.c near ACT_LMODS_TAP for some of this OSM logic.
                 // Basically, tryinig to emulate OSM(MOD_RSFT) on single tap.
-                set_oneshot_mods(get_oneshot_mods() | mod_config(mod));
+                set_oneshot_mods(get_oneshot_mods() | mod_config(mods));
             }
             else {
                 dance_tap_code(tap->on_tap);
