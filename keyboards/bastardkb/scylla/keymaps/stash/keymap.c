@@ -25,7 +25,7 @@ extern keymap_config_t keymap_config;
 
 enum layer_names { _WINDOWS, _MAC, _LOWER, _RAISE, _ADJUST };
 
-enum custom_keycodes { SET_WIN = SAFE_RANGE, SET_MAC, SUPALTT, CVVV };
+enum custom_keycodes { SET_WIN = SAFE_RANGE, SET_MAC, RGB_RLD };
 
 enum dance_codes { DANCE_TSHIFT = 0, DANCE_CVVV, DANCE_TEST, DANCE_MAX };
 #define TD_TEST TD(DANCE_TEST)
@@ -72,7 +72,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   ),
 
 [_ADJUST] = LAYOUT_split_4x6_5(
-  QK_BOOT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, SET_WIN,     SET_MAC, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, RGB_TOG,
+  QK_BOOT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, SET_WIN,     SET_MAC, XXXXXXX, XXXXXXX, XXXXXXX, RGB_RLD, RGB_TOG,
   XXXXXXX, TO(0),   TO(1),   XXXXXXX, XXXXXXX, XXXXXXX,     XXXXXXX, RGB_SPI, RGB_SAI, RGB_HUI, RGB_VAI, RGB_MOD,
   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, TD_TEST, XXXXXXX,     XXXXXXX, RGB_SPD, RGB_SAD, RGB_HUD, RGB_VAD, RGB_RMOD,
   KC_LSFT, KC_NO, QK_REBOOT, EE_CLR,  XXXXXXX, XXXXXXX,     XXXXXXX, RGB_M_B, RGB_M_R, RGB_M_G, RGB_M_P, KC_RSFT,
@@ -86,17 +86,19 @@ layer_state_t layer_state_set_user(layer_state_t state) {
     switch(get_highest_layer(state)) {
         // TODO: make these other layers respect the brightness setting (or use a suitably low one if brightness is all the way off)
         case _LOWER:
+            rgb_matrix_mode_noeeprom(RGB_MATRIX_SOLID_COLOR);
             rgb_matrix_sethsv_noeeprom(HSV_GOLD);
             break;
         case _RAISE:
+            rgb_matrix_mode_noeeprom(RGB_MATRIX_SOLID_COLOR);
             rgb_matrix_sethsv_noeeprom(HSV_BLUE);
             break;
         case _ADJUST:
-            rgb_matrix_sethsv_noeeprom(HSV_RED);
+            rgb_matrix_mode_noeeprom(RGB_MATRIX_SOLID_COLOR);
+            rgb_matrix_sethsv_noeeprom(HSV_WHITE);
             break;
         default:
-            // TODO: make this do whatever is in eeprom
-            rgb_matrix_sethsv_noeeprom(HSV_CYAN);
+            rgb_matrix_reload_from_eeprom();
             break;
     }
     return state;
@@ -127,6 +129,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 clear_keyboard();
             }
             return false; // stop processing
+        case RGB_RLD:
+            rgb_matrix_reload_from_eeprom();
+            return false;
+
     }
     return true; // continue processing
 }
