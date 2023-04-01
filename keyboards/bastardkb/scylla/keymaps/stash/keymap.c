@@ -57,18 +57,18 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 [_LOWER] = LAYOUT_split_4x6_5(
   _______, _______, _______, _______, _______, _______,     _______, _______, KC_NUM,  KC_PSLS, KC_PAST, _______,
-  _______, XXXXXXX, XXXXXXX, KC_UP,   MAC_SSC, MAC_SSC,     XXXXXXX, KC_P7,   KC_P8,   KC_P9,   KC_PMNS, _______,
-  _______, KC_GRV,  KC_LEFT, KC_DOWN, KC_RGHT, KC_ENT,      XXXXXXX, KC_P6,   KC_P5,   KC_P4,   KC_PPLS, _______,
-  _______, KC_GRV,  KC_LBRC, KC_RBRC, KC_LPRN, KC_RPRN,     XXXXXXX, KC_P3,   KC_P2,   KC_P1,   KC_PENT, _______,
+  _______, XXXXXXX, XXXXXXX, KC_LCBR, KC_RCBR, MAC_SSC,     XXXXXXX, KC_P7,   KC_P8,   KC_P9,   KC_PMNS, _______,
+  _______, XXXXXXX, XXXXXXX, KC_LPRN, KC_RPRN, KC_ENT,      XXXXXXX, KC_P6,   KC_P5,   KC_P4,   KC_PPLS, _______,
+  _______, KC_GRV,  KC_GRV,  KC_LBRC, KC_RBRC, KC_ENT,      XXXXXXX, KC_P3,   KC_P2,   KC_P1,   KC_PENT, _______,
                              _______, _______, KC_DEL,      KC_PENT, KC_P0,   KC_PDOT,
                                       _______, _______,     _______, _______
   ),
 
 [_RAISE] = LAYOUT_split_4x6_5(
   KC_F12,  KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,       KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,
-  _______, XXXXXXX, XXXXXXX, KC_UP,   MAC_SSC, MAC_SSC,     KC_NUM,  KC_PSCR, KC_SCRL, KC_PAUS, XXXXXXX, _______,
-  _______, KC_GRV,  KC_LEFT, KC_DOWN, KC_RGHT, KC_ENT,      XXXXXXX, KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, _______,
-  _______, KC_GRV,  KC_LBRC, KC_RBRC, KC_LPRN, KC_RPRN,     XXXXXXX, KC_HOME, KC_PGDN, KC_PGUP, KC_END,  _______,
+  _______, XXXXXXX, XXXXXXX, KC_LCBR, KC_RCBR, MAC_SSC,     KC_NUM,  KC_PSCR, KC_SCRL, KC_PAUS, XXXXXXX, _______,
+  _______, XXXXXXX, XXXXXXX, KC_LPRN, KC_RPRN, KC_ENT,      XXXXXXX, KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, _______,
+  _______, KC_GRV,  KC_GRV,  KC_LBRC, KC_RBRC, KC_ENT,      XXXXXXX, KC_HOME, KC_PGDN, KC_PGUP, KC_END,  _______,
                              KC_LALT, KC_LCTL, KC_DEL,      KC_INS,  CW_TOGG, KC_MENU,
                                       KC_LGUI, _______,     _______, _______
   ),
