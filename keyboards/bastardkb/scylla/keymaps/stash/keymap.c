@@ -83,21 +83,23 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   ),
 };
 
+void layer_color(uint8_t hue, uint8_t sat, uint8_t _val) {
+    rgb_matrix_mode_noeeprom(RGB_MATRIX_SOLID_COLOR);
+    // This function ignores the value limit, so just ignore it from the constant entirely:
+    rgb_matrix_sethsv_noeeprom(hue, sat, RGBLIGHT_LIMIT_VAL);
+}
+
 layer_state_t layer_state_set_user(layer_state_t state) {
     state = update_tri_layer_state(state, _LOWER, _RAISE, _ADJUST);
     switch(get_highest_layer(state)) {
-        // TODO: make these other layers respect the brightness setting (or use a suitably low one if brightness is all the way off)
         case _LOWER:
-            rgb_matrix_mode_noeeprom(RGB_MATRIX_SOLID_COLOR);
-            rgb_matrix_sethsv_noeeprom(HSV_GOLD);
+            layer_color(HSV_GOLD);
             break;
         case _RAISE:
-            rgb_matrix_mode_noeeprom(RGB_MATRIX_SOLID_COLOR);
-            rgb_matrix_sethsv_noeeprom(HSV_BLUE);
+            layer_color(HSV_BLUE);
             break;
         case _ADJUST:
-            rgb_matrix_mode_noeeprom(RGB_MATRIX_SOLID_COLOR);
-            rgb_matrix_sethsv_noeeprom(HSV_WHITE);
+            layer_color(HSV_WHITE);
             break;
         default:
             rgb_matrix_reload_from_eeprom();

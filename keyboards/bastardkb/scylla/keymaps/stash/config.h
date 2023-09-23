@@ -5,6 +5,11 @@
 #define TAPPING_TERM 180
 #define TAPPING_TERM_PER_KEY
 
+#define RGBLIGHT_LIMIT_VAL 64
+#define RGBLIGHT_VAL_STEP 1
+#define RGBLIGHT_DEFAULT_VAL 16
+#define RGBLIGHT_DEFAULT_SPD 0
+
 /// HEADS UP
 /// if any of these change, you need to flash both sides so that the enums match up
 #define ENABLE_RGB_MATRIX_SOLID_COLOR
