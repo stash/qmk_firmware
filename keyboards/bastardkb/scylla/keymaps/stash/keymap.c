@@ -202,7 +202,7 @@ uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
     }
 }
 
-uint8_t dance_step(qk_tap_dance_state_t *state) {
+uint8_t dance_step(tap_dance_state_t *state) {
     if (state->count == 1) {
         if (state->interrupted || !state->pressed) return SINGLE_TAP;
         else return SINGLE_HOLD;
@@ -234,11 +234,11 @@ void dance_unregister_code(uint16_t code) {
     unregister_code16(dance_code_mod_config(code));
 }
 
-void on_dance(qk_tap_dance_state_t *state, void *user_data);
-void dance_finished(qk_tap_dance_state_t *state, void *user_data);
-void dance_reset(qk_tap_dance_state_t *state, void *user_data);
+void on_dance(tap_dance_state_t *state, void *user_data);
+void dance_finished(tap_dance_state_t *state, void *user_data);
+void dance_reset(tap_dance_state_t *state, void *user_data);
 
-void on_dance(qk_tap_dance_state_t *state, void *user_data) {
+void on_dance(tap_dance_state_t *state, void *user_data) {
     td_tap_t *tap = (td_tap_t *)user_data;
     if (state->count < 3)
         return;
@@ -253,7 +253,7 @@ void on_dance(qk_tap_dance_state_t *state, void *user_data) {
     }
 }
 
-void dance_finished(qk_tap_dance_state_t *state, void *user_data) {
+void dance_finished(tap_dance_state_t *state, void *user_data) {
     td_tap_t *tap = (td_tap_t *)user_data;
     tap->step = dance_step(state);
     switch (tap->step) {
@@ -291,7 +291,7 @@ void dance_finished(qk_tap_dance_state_t *state, void *user_data) {
     }
 }
 
-void dance_reset(qk_tap_dance_state_t *state, void *user_data) {
+void dance_reset(tap_dance_state_t *state, void *user_data) {
     td_tap_t *tap = (td_tap_t *)user_data;
     switch (tap->step) {
         case SINGLE_HOLD:
@@ -309,7 +309,7 @@ void dance_reset(qk_tap_dance_state_t *state, void *user_data) {
 }
 
 #define REGISTER_DANCE(x) [x] = {.fn = {on_dance, dance_finished, dance_reset}, .user_data = &(dance_state[x])}
-qk_tap_dance_action_t tap_dance_actions[] = {
+tap_dance_action_t tap_dance_actions[] = {
     REGISTER_DANCE(DANCE_TSHIFT),
     REGISTER_DANCE(DANCE_CVVV),
     REGISTER_DANCE(DANCE_TEST),
