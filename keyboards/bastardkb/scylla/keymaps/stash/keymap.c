@@ -23,16 +23,16 @@
 
 extern keymap_config_t keymap_config;
 
-enum layer_names { _WINDOWS, _MAC, _LOWER, _RAISE, _ADJUST };
+enum layer_names { _WINDOWS, _MAC, _R_HAND, _L_HAND, _BOTH_HANDS };
 
 enum custom_keycodes { SET_WIN = SAFE_RANGE, SET_MAC, RGB_RLD };
 
-enum dance_codes { DANCE_TSHIFT = 0, DANCE_CVVV, DANCE_TEST, DANCE_MAX };
-#define TD_TEST TD(DANCE_TEST)
+enum dance_codes { DANCE_CVVV = 0, DANCE_MAX };
 #define TD_CVVV TD(DANCE_CVVV)
 
-// Mac Screen Shot to Clipboard
+// SSC = Screen Shot to Clipboard
 #define MAC_SSC C(S(G(KC_4)))
+#define WIN_SSC G(S(KC_S))
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
@@ -42,7 +42,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   KC_EQUAL, KC_A,   KC_R,    KC_S,    KC_T,    KC_G,        KC_H,   KC_N,   KC_E,    KC_I,   KC_O,    KC_QUOT,
   KC_LSFT,  KC_Z,   KC_X,    KC_C,    KC_D,    KC_V,        KC_K,   KC_M,   KC_COMM, KC_DOT, KC_SLSH, KC_MINS,
                       LALT_T(KC_ESC), KC_SPC,  KC_BSPC,     RCTL_T(KC_ENT), OSM(MOD_RSFT), OSM(MOD_MEH),
-                                   KC_LCTL, TT(_RAISE),     TT(_LOWER), KC_RGUI
+                                   KC_LCTL, TT(_L_HAND),    TT(_R_HAND), KC_RGUI
   ),
 
 [_MAC] = LAYOUT_split_4x6_5(
@@ -52,33 +52,33 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   KC_EQUAL, KC_A,   KC_R,    KC_S,    KC_T,    KC_G,        KC_H,   KC_N,   KC_E,    KC_I,   KC_O,    KC_QUOT,
   KC_LSFT,  KC_Z,   KC_X,    KC_C,    KC_D,    KC_V,        KC_K,   KC_M,   KC_COMM, KC_DOT, KC_SLSH, KC_MINS,
                       LALT_T(KC_ESC), KC_SPC,  KC_BSPC,     RALT_T(KC_ENT), OSM(MOD_RSFT), OSM(MOD_MEH),
-                                   KC_LCTL, TT(_RAISE),     TT(_LOWER), KC_RGUI
+                                   KC_LCTL, TT(_L_HAND),    TT(_R_HAND), KC_RGUI
   ),
 
-[_LOWER] = LAYOUT_split_4x6_5(
-  _______, _______, _______, _______, _______, _______,     _______, _______, KC_NUM,  KC_PSLS, KC_PAST, _______,
-  _______, XXXXXXX, XXXXXXX, KC_LCBR, KC_RCBR, MAC_SSC,     XXXXXXX, KC_P7,   KC_P8,   KC_P9,   KC_PMNS, _______,
-  _______, XXXXXXX, XXXXXXX, KC_LPRN, KC_RPRN, KC_ENT,      XXXXXXX, KC_P6,   KC_P5,   KC_P4,   KC_PPLS, _______,
-  _______, KC_GRV,  KC_GRV,  KC_LBRC, KC_RBRC, KC_ENT,      XXXXXXX, KC_P3,   KC_P2,   KC_P1,   KC_PENT, _______,
-                             _______, _______, KC_DEL,      KC_PENT, KC_P0,   KC_PDOT,
-                                      _______, _______,     _______, _______
-  ),
-
-[_RAISE] = LAYOUT_split_4x6_5(
+[_R_HAND] = LAYOUT_split_4x6_5(
   KC_F12,  KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,       KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,
-  _______, XXXXXXX, XXXXXXX, KC_LCBR, KC_RCBR, MAC_SSC,     KC_NUM,  KC_PSCR, KC_SCRL, KC_PAUS, XXXXXXX, _______,
-  _______, XXXXXXX, XXXXXXX, KC_LPRN, KC_RPRN, KC_ENT,      XXXXXXX, KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, _______,
+  _______, XXXXXXX, XXXXXXX, KC_LCBR, KC_RCBR, MAC_SSC,     KC_BTN5, KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, XXXXXXX,
+  _______, XXXXXXX, XXXXXXX, KC_LPRN, KC_RPRN, WIN_SSC,     KC_WH_U, KC_MS_L, KC_MS_D, KC_MS_U, KC_MS_R, XXXXXXX,
+  _______, KC_GRV,  KC_GRV,  KC_LBRC, KC_RBRC, KC_ENT,      KC_WH_D, KC_WH_L, KC_WH_D, KC_WH_U, KC_WH_R, XXXXXXX,
+                             _______, _______, KC_DEL,      KC_BTN4, KC_BTN1, KC_BTN2,
+                                      _______, _______,     _______, KC_BTN3
+  ),
+
+[_L_HAND] = LAYOUT_split_4x6_5(
+  KC_F12,  KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,       KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,
+  _______, XXXXXXX, XXXXXXX, KC_LCBR, KC_RCBR, MAC_SSC,     XXXXXXX, KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, _______,
+  _______, XXXXXXX, XXXXXXX, KC_LPRN, KC_RPRN, WIN_SSC,     XXXXXXX, KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, _______,
   _______, KC_GRV,  KC_GRV,  KC_LBRC, KC_RBRC, KC_ENT,      XXXXXXX, KC_HOME, KC_PGDN, KC_PGUP, KC_END,  _______,
                              KC_LALT, KC_LCTL, KC_DEL,      KC_INS,  CW_TOGG, KC_MENU,
                                       KC_LGUI, _______,     _______, _______
   ),
 
-[_ADJUST] = LAYOUT_split_4x6_5(
-  QK_BOOT, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, SET_WIN,     SET_MAC, XXXXXXX, XXXXXXX, XXXXXXX, RGB_RLD, RGB_TOG,
-  XXXXXXX, TO(0),   TO(1),   XXXXXXX, XXXXXXX, XXXXXXX,     XXXXXXX, RGB_SPI, RGB_SAI, RGB_HUI, RGB_VAI, RGB_MOD,
-  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, TD_TEST, XXXXXXX,     XXXXXXX, RGB_SPD, RGB_SAD, RGB_HUD, RGB_VAD, RGB_RMOD,
-  KC_LSFT, KC_NO, QK_REBOOT, EE_CLR,  XXXXXXX, XXXXXXX,     XXXXXXX, RGB_M_B, RGB_M_R, RGB_M_G, RGB_M_P, KC_RSFT,
-                             _______, _______, _______,     _______, _______, _______,
+[_BOTH_HANDS] = LAYOUT_split_4x6_5(
+  QK_BOOT, QK_REBOOT,EE_CLR, XXXXXXX, XXXXXXX, SET_WIN,     SET_MAC, XXXXXXX, XXXXXXX, KC_PSLS, KC_PAST, KC_NUM,
+  RGB_RLD, RGB_SPI, RGB_SAI, RGB_HUI, RGB_VAI, RGB_MOD,     KC_TAB,  KC_P7,   KC_P8,   KC_P9,   KC_PMNS, KC_PSCR,
+  RGB_TOG, RGB_SPD, RGB_SAD, RGB_HUD, RGB_VAD, RGB_RMOD,    KC_EQUAL,KC_P6,   KC_P5,   KC_P4,   KC_PPLS, KC_SCRL,
+  KC_LSFT, RGB_M_B, RGB_M_R, RGB_M_G, RGB_M_P, KC_RSFT,     KC_LPRN, KC_P3,   KC_P2,   KC_P1,   KC_PENT, KC_PAUS,
+                             _______, _______, _______,     KC_PENT, KC_P0,   KC_PDOT,
                                       _______, _______,     _______, _______
   ),
 };
@@ -90,15 +90,15 @@ void layer_color(uint8_t hue, uint8_t sat, uint8_t _val) {
 }
 
 layer_state_t layer_state_set_user(layer_state_t state) {
-    state = update_tri_layer_state(state, _LOWER, _RAISE, _ADJUST);
+    state = update_tri_layer_state(state, _R_HAND, _L_HAND, _BOTH_HANDS);
     switch(get_highest_layer(state)) {
-        case _LOWER:
-            layer_color(HSV_GOLD);
+        case _R_HAND:
+            layer_color(HSV_CYAN);
             break;
-        case _RAISE:
+        case _L_HAND:
             layer_color(HSV_BLUE);
             break;
-        case _ADJUST:
+        case _BOTH_HANDS:
             layer_color(HSV_WHITE);
             break;
         default:
@@ -165,30 +165,12 @@ typedef struct {
 } td_tap_t;
 
 td_tap_t dance_state[DANCE_MAX] = {
-    [DANCE_TSHIFT] = {
-        .on_tap = OSM(MOD_RSFT),
-        .on_hold = KC_RSFT,
-        .on_double_tap = KC_CAPS,
-        .on_double_hold = KC_RCTL,
-        .timing = TAPPING_TERM,
-        .hold_does_tap = false,
-        .step = NO_TAP
-    },
     [DANCE_CVVV] = {
         .on_tap = LCTL(KC_C),
         .on_hold = LCTL(KC_V),
         .on_double_tap = LCTL(LSFT(KC_A)), // "copy link" in this one editor I use often ;)
         .on_double_hold = LCTL(LSFT(KC_V)),
         .timing = (TAPPING_TERM * 2),
-        .hold_does_tap = true,
-        .step = NO_TAP
-    },
-    [DANCE_TEST] = {
-        .on_tap = LSFT(KC_A),
-        .on_hold = (KC_B),
-        .on_double_tap = LSFT(KC_C),
-        .on_double_hold = (KC_D),
-        .timing = 185,
         .hold_does_tap = true,
         .step = NO_TAP
     },
@@ -312,7 +294,5 @@ void dance_reset(tap_dance_state_t *state, void *user_data) {
 
 #define REGISTER_DANCE(x) [x] = {.fn = {on_dance, dance_finished, dance_reset}, .user_data = &(dance_state[x])}
 tap_dance_action_t tap_dance_actions[] = {
-    REGISTER_DANCE(DANCE_TSHIFT),
     REGISTER_DANCE(DANCE_CVVV),
-    REGISTER_DANCE(DANCE_TEST),
 };

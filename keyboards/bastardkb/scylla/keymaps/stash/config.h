@@ -10,6 +10,10 @@
 #define RGBLIGHT_DEFAULT_VAL 16
 #define RGBLIGHT_DEFAULT_SPD 0
 
+// Kinetic mode mousekeys
+#define MK_KINETIC_SPEED
+#define MOUSEKEY_BASE_SPEED 3000
+
 /// HEADS UP
 /// if any of these change, you need to flash both sides so that the enums match up
 #define ENABLE_RGB_MATRIX_SOLID_COLOR
