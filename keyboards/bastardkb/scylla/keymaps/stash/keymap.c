@@ -57,27 +57,27 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 [_R_HAND] = LAYOUT_split_4x6_5(
   KC_F12,  KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,       KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,
-  _______, XXXXXXX, XXXXXXX, KC_LCBR, KC_RCBR, MAC_SSC,     KC_BTN5, KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, XXXXXXX,
-  _______, XXXXXXX, XXXXXXX, KC_LPRN, KC_RPRN, WIN_SSC,     KC_WH_U, KC_MS_L, KC_MS_D, KC_MS_U, KC_MS_R, XXXXXXX,
-  _______, KC_GRV,  KC_GRV,  KC_LBRC, KC_RBRC, KC_ENT,      KC_WH_D, KC_WH_L, KC_WH_D, KC_WH_U, KC_WH_R, XXXXXXX,
-                             _______, _______, KC_DEL,      KC_BTN4, KC_BTN1, KC_BTN2,
-                                      _______, _______,     _______, KC_BTN3
+  _______, XXXXXXX, XXXXXXX, KC_LCBR, KC_RCBR, MAC_SSC,     KC_WH_U, KC_BTN4, XXXXXXX, XXXXXXX, KC_BTN5, KC_ACL2,
+  _______, XXXXXXX, XXXXXXX, KC_LPRN, KC_RPRN, WIN_SSC,     KC_WH_D, KC_MS_L, KC_MS_D, KC_MS_U, KC_MS_R, KC_ACL1,
+  _______, KC_GRV,  KC_TILD, KC_LBRC, KC_RBRC, KC_ENT,      XXXXXXX, KC_WH_L, KC_WH_D, KC_WH_U, KC_WH_R, KC_ACL0,
+                             _______, _______, KC_DEL,      KC_BTN3, KC_BTN1, KC_BTN2,
+                                      _______, _______,     _______, _______
   ),
 
 [_L_HAND] = LAYOUT_split_4x6_5(
   KC_F12,  KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,       KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,
   _______, XXXXXXX, XXXXXXX, KC_LCBR, KC_RCBR, MAC_SSC,     XXXXXXX, KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, _______,
   _______, XXXXXXX, XXXXXXX, KC_LPRN, KC_RPRN, WIN_SSC,     XXXXXXX, KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, _______,
-  _______, KC_GRV,  KC_GRV,  KC_LBRC, KC_RBRC, KC_ENT,      XXXXXXX, KC_HOME, KC_PGDN, KC_PGUP, KC_END,  _______,
+  _______, KC_GRV,  KC_TILD, KC_LBRC, KC_RBRC, KC_ENT,      XXXXXXX, KC_HOME, KC_PGDN, KC_PGUP, KC_END,  _______,
                              KC_LALT, KC_LCTL, KC_DEL,      KC_INS,  CW_TOGG, KC_MENU,
                                       KC_LGUI, _______,     _______, _______
   ),
 
 [_BOTH_HANDS] = LAYOUT_split_4x6_5(
-  QK_BOOT, QK_REBOOT,EE_CLR, XXXXXXX, XXXXXXX, SET_WIN,     SET_MAC, XXXXXXX, XXXXXXX, KC_PSLS, KC_PAST, KC_NUM,
-  RGB_RLD, RGB_SPI, RGB_SAI, RGB_HUI, RGB_VAI, RGB_MOD,     KC_TAB,  KC_P7,   KC_P8,   KC_P9,   KC_PMNS, KC_PSCR,
-  RGB_TOG, RGB_SPD, RGB_SAD, RGB_HUD, RGB_VAD, RGB_RMOD,    KC_EQUAL,KC_P6,   KC_P5,   KC_P4,   KC_PPLS, KC_SCRL,
-  KC_LSFT, RGB_M_B, RGB_M_R, RGB_M_G, RGB_M_P, KC_RSFT,     KC_LPRN, KC_P3,   KC_P2,   KC_P1,   KC_PENT, KC_PAUS,
+  QK_BOOT, QK_REBOOT,EE_CLR, XXXXXXX, XXXXXXX, SET_WIN,     SET_MAC, XXXXXXX, XXXXXXX, XXXXXXX, KC_PSLS, KC_NUM,
+  RGB_RLD, RGB_SPI, RGB_SAI, RGB_HUI, RGB_VAI, RGB_MOD,     KC_TAB,  KC_P7,   KC_P8,   KC_P9,   KC_PAST, KC_PSCR,
+  RGB_TOG, RGB_SPD, RGB_SAD, RGB_HUD, RGB_VAD, RGB_RMOD,    KC_EQUAL,KC_P6,   KC_P5,   KC_P4,   KC_PMNS, KC_SCRL,
+  KC_LSFT, RGB_M_P, RGB_M_B, RGB_M_R, RGB_M_G, KC_RSFT,     KC_LPRN, KC_P3,   KC_P2,   KC_P1,   KC_PPLS, KC_PAUS,
                              _______, _______, _______,     KC_PENT, KC_P0,   KC_PDOT,
                                       _______, _______,     _______, _______
   ),
