@@ -41,8 +41,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   KC_TAB,   KC_Q,   KC_W,    KC_F,    KC_P,    KC_B,        KC_J,   KC_L,   KC_U,    KC_Y,   KC_SCLN, KC_BSLS,
   KC_EQUAL, KC_A,   KC_R,    KC_S,    KC_T,    KC_G,        KC_H,   KC_N,   KC_E,    KC_I,   KC_O,    KC_QUOT,
   KC_LSFT,  KC_Z,   KC_X,    KC_C,    KC_D,    KC_V,        KC_K,   KC_M,   KC_COMM, KC_DOT, KC_SLSH, KC_MINS,
+  /*                                           vvvvvvvvvvvvvvvvvvv  Windows ctrl+backspace = del word           */
                       LALT_T(KC_ESC), KC_SPC,  KC_BSPC,     RCTL_T(KC_ENT), OSM(MOD_RSFT), OSM(MOD_MEH),
-                                   KC_LCTL, TT(_L_HAND),    TT(_R_HAND), KC_RGUI
+                                  KC_LCTL, TT(_L_HAND),     TT(_R_HAND), KC_RGUI
   ),
 
 [_MAC] = LAYOUT_split_4x6_5(
@@ -51,8 +52,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   KC_TAB,   KC_Q,   KC_W,    KC_F,    KC_P,    KC_B,        KC_J,   KC_L,   KC_U,    KC_Y,   KC_SCLN, KC_BSLS,
   KC_EQUAL, KC_A,   KC_R,    KC_S,    KC_T,    KC_G,        KC_H,   KC_N,   KC_E,    KC_I,   KC_O,    KC_QUOT,
   KC_LSFT,  KC_Z,   KC_X,    KC_C,    KC_D,    KC_V,        KC_K,   KC_M,   KC_COMM, KC_DOT, KC_SLSH, KC_MINS,
+  /*                                           vvvvvvvvvvvvvvvvvvv  Mac option+backspace = del word             */
                       LALT_T(KC_ESC), KC_SPC,  KC_BSPC,     RALT_T(KC_ENT), OSM(MOD_RSFT), OSM(MOD_MEH),
-                                   KC_LCTL, TT(_L_HAND),    TT(_R_HAND), KC_RGUI
+                                  KC_LCTL, TT(_L_HAND),     TT(_R_HAND), KC_RGUI
   ),
 
 [_R_HAND] = LAYOUT_split_4x6_5(

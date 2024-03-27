@@ -4,6 +4,9 @@
 #define TAPPING_TOGGLE 1
 #define TAPPING_TERM 180
 #define TAPPING_TERM_PER_KEY
+// See https://github.com/qmk/qmk_firmware/blob/master/docs/tap_hold.md#hold-on-other-key-press
+// Essentially, this facilitates rolls with TT(Layer) and other mod-tap keys
+#define HOLD_ON_OTHER_KEY_PRESS
 
 #define RGBLIGHT_LIMIT_VAL 64
 #undef RGB_MATRIX_MAXIMUM_BRIGHTNESS
