@@ -1,5 +1,4 @@
 /*
- * Copyright 2021 Quentin LEBASTARD <qlebastard@gmail.com>
  * Copyright 2022 Charly Delay <charly@codesink.dev> (@0xcharly)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,12 +17,17 @@
 
 #pragma once
 
-/* RGB matrix support. */
-#ifdef RGB_MATRIX_ENABLE
-#    define SPLIT_TRANSPORT_MIRROR
-#    define RGB_MATRIX_LED_COUNT 36
-#    define RGB_MATRIX_SPLIT { 18, 18 }
-#    define RGB_MATRIX_MAXIMUM_BRIGHTNESS 200
-#    define RGB_DISABLE_WHEN_USB_SUSPENDED
-#    define RGB_MATRIX_KEYPRESSES
-#endif
+/* Handedness. */
+#define MASTER_RIGHT
+
+// To use the handedness pin, resistors need to be installed on the adapter PCB.
+// If so, uncomment the following code, and undefine MASTER_RIGHT above.
+// #define SPLIT_HAND_PIN GP15
+// #define SPLIT_HAND_PIN_LOW_IS_LEFT  // High -> right, Low -> left.
+
+/* VBUS detection. */
+#define USB_VBUS_PIN GP19
+
+/* Reset. */
+#define RP2040_BOOTLOADER_DOUBLE_TAP_RESET
+#define RP2040_BOOTLOADER_DOUBLE_TAP_RESET_LED GP17
